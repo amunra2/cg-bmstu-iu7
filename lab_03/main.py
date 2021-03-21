@@ -1,6 +1,6 @@
 from tkinter import Tk, Button, Label, Entry, END, Listbox, Canvas, Radiobutton, LEFT, RIGHT, IntVar
 from tkinter import messagebox
-from math import sqrt, acos, degrees, pi, sin, cos
+from math import sqrt, acos, degrees, pi, sin, cos, radians
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,8 +13,9 @@ WIN_COLOR = "#bf80ff"
 
 CV_WIDE = 900
 CV_HEIGHT = 900
-СV_COLOR = "#f3e6ff" #"#cce6ff"
+CV_COLOR = "#f3e6ff" #"#cce6ff"
 #CV_COLOR
+#СV_COLOR
 MAIN_TEXT_COLOR = "#b566ff" #"lightblue" a94dff
 TEXT_COLOR = "#ce99ff"
 
@@ -24,6 +25,111 @@ BOX_COLOR = "#dab3ff"
 
 def check_option(option):
     messagebox.showinfo("Выбран", "Выбрана опция %d" %(option))
+
+
+
+# Methods
+
+def parse_color(option_color):
+
+    print("Color = ", option_color)
+
+    color = "black" # None
+
+    if (option_color == 1):
+        color = "blue"
+    elif (option_color == 2):
+        color = "orange"
+    elif (option_color == 3):
+        color = "black"
+    elif (option_color == 4):
+        color = CV_COLOR
+    # else:
+    #     messagebox.showerror("Ошибка", "Нет такого цвета")
+
+    return color
+
+
+def parse_spektr(option, option_color):
+    try:
+        line_len = float(len_line.get()) # float?
+        angle_spin = float(angle.get())
+    except:
+        messagebox.showerror("Ошибка", "Неверно введены координаты")
+        return
+
+    p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
+
+    spin = 0
+
+    while (spin <= 2 * pi):
+        x2 = CV_WIDE // 2 + cos(spin) * line_len
+        y2 = CV_HEIGHT // 2 + sin(spin) * line_len
+
+        p2 = [x2, y2]
+
+        parse_methods(p1, p2, option, option_color)
+
+        spin += radians(angle_spin)
+    
+
+def parse_line(option, option_color):
+    try:
+        x1 = float(x1_line.get()) # float?
+        y1 = float(y1_line.get())
+        x2 = float(x2_line.get())
+        y2 = float(y2_line.get())
+    except:
+        messagebox.showerror("Ошибка", "Неверно введены координаты")
+        return
+
+    p1 = [x1, y1]
+    p2 = [x2, y2]
+
+    parse_methods(p1, p2, option, option_color)
+
+
+def parse_methods(p1, p2, option, option_color):
+
+    print("Method = ", option)
+
+    color = parse_color(option_color)
+
+    if (option == 1):
+        messagebox.showinfo("Метод", "Брезенхем (int)")
+    elif (option == 2):
+        messagebox.showinfo("Метод", "Брезенхем (float)")
+    elif (option == 3):
+        messagebox.showinfo("Метод", "Брезенхем (smooth)")
+    elif (option == 4):
+        messagebox.showinfo("Метод", "ЦДА")
+    elif (option == 5):
+        messagebox.showinfo("Метод", "Ву")
+    elif (option == 6):
+        #messagebox.showinfo("Метод", "Библиотечная")
+        lib_method(p1, p2, color)
+    else:
+        messagebox.showerror("Ошибка", "Неизвестный алгоритм")
+
+
+def lib_method(p1, p2, color):
+
+    canvas_win.create_line(p1[0], p1[1], p2[0], p2[1], fill = color)
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -39,7 +145,7 @@ if __name__ == "__main__":
     win.title("Лабораторная работа #3 (Цветков И.А. ИУ7-43Б)")
     win.resizable(False, False)
 
-    canvas_win = Canvas(win, width = CV_WIDE, height = CV_HEIGHT, bg = СV_COLOR)
+    canvas_win = Canvas(win, width = CV_WIDE, height = CV_HEIGHT, bg = CV_COLOR)
     canvas_win.place(x = 0, y = 0)
 
 
@@ -92,18 +198,18 @@ if __name__ == "__main__":
     option_color = IntVar()
     option_color.set(0)
 
-    color_line_blue = Radiobutton(text = "Синий", font="-family {Consolas} -size 14", variable = option_color, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
-    color_line_blue.place(x = CV_WIDE + 400, y = 250)
+    color_line_blue = Radiobutton(text = "Синий", font="-family {Consolas} -size 14", variable = option_color, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    color_line_blue.place(x = CV_WIDE + 25, y = 250)
 
-    color_line_black = Radiobutton(text = "Черный", font="-family {Consolas} -size 14", variable = option_color, value = 4, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
-    color_line_black.place(x = CV_WIDE + 400, y = 285)
+    color_line_black = Radiobutton(text = "Черный", font="-family {Consolas} -size 14", variable = option_color, value = 3, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    color_line_black.place(x = CV_WIDE + 25, y = 285)
 
 
-    color_line_orange = Radiobutton(text = "Оранжевый", font="-family {Consolas} -size 14", variable = option_color, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
-    color_line_orange.place(x = CV_WIDE + 25, y = 250)
+    color_line_orange = Radiobutton(text = "Оранжевый", font="-family {Consolas} -size 14", variable = option_color, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    color_line_orange.place(x = CV_WIDE + 400, y = 250)
 
-    color_line_background = Radiobutton(text = "Фоновый", font="-family {Consolas} -size 14", variable = option_color, value = 3, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
-    color_line_background.place(x = CV_WIDE + 25, y = 285)
+    color_line_background = Radiobutton(text = "Фоновый", font="-family {Consolas} -size 14", variable = option_color, value = 4, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    color_line_background.place(x = CV_WIDE + 400, y = 285)
 
 
     # Line
@@ -141,7 +247,7 @@ if __name__ == "__main__":
     y2_line.place(x = CV_WIDE + 390, y = 455)
 
 
-    draw_line_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: check_option(option.get()), width = 15, bg = TEXT_COLOR)
+    draw_line_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_line(option.get(), option_color.get()), width = 15, bg = TEXT_COLOR)
     draw_line_btn.place(x = CV_WIDE + 210, y = 490)
 
 
@@ -166,7 +272,7 @@ if __name__ == "__main__":
     angle.place(x = CV_WIDE + 450, y = 590)
 
 
-    draw_spektr_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: check_option(option.get()), width = 15, bg = TEXT_COLOR)
+    draw_spektr_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_spektr(option.get(), option_color.get()), width = 15, bg = TEXT_COLOR)
     draw_spektr_btn.place(x = CV_WIDE + 210, y = 640)
 
 
@@ -181,6 +287,9 @@ if __name__ == "__main__":
 
     clear_win_btn = Button(win, text = "Очистить экран", font="-family {Consolas} -size 15", command = lambda: check_option(option.get()), width = 25, height = 2, bg = TEXT_COLOR)
     clear_win_btn.place(x = CV_WIDE + 150, y = 800)
+
+
+
 
 
     # # Figure center
