@@ -21,6 +21,8 @@ TEXT_COLOR = "#ce99ff"
 
 BOX_COLOR = "#dab3ff"
 
+POINT_RAD = 1 #3.5
+
 
 
 def check_option(option):
@@ -75,10 +77,10 @@ def parse_spektr(option, option_color):
 
 def parse_line(option, option_color):
     try:
-        x1 = float(x1_line.get()) # float?
-        y1 = float(y1_line.get())
-        x2 = float(x2_line.get())
-        y2 = float(y2_line.get())
+        x1 = int(x1_line.get()) # float?
+        y1 = int(y1_line.get())
+        x2 = int(x2_line.get())
+        y2 = int(y2_line.get())
     except:
         messagebox.showerror("Ошибка", "Неверно введены координаты")
         return
@@ -97,13 +99,15 @@ def parse_methods(p1, p2, option, option_color):
 
     if (option == 1):
         messagebox.showinfo("Метод", "Брезенхем (int)")
-    elif (option == 2):
-        messagebox.showinfo("Метод", "Брезенхем (float)")
     elif (option == 3):
-        messagebox.showinfo("Метод", "Брезенхем (smooth)")
-    elif (option == 4):
-        messagebox.showinfo("Метод", "ЦДА")
+        messagebox.showinfo("Метод", "Брезенхем (float)")
     elif (option == 5):
+        messagebox.showinfo("Метод", "Брезенхем (smooth)")
+    elif (option == 2):
+        #messagebox.showinfo("Метод", "ЦДА")
+        dots = cda_method(p1, p2)
+        draw_line(dots, color)
+    elif (option == 4):
         messagebox.showinfo("Метод", "Ву")
     elif (option == 6):
         #messagebox.showinfo("Метод", "Библиотечная")
@@ -113,14 +117,51 @@ def parse_methods(p1, p2, option, option_color):
 
 
 def lib_method(p1, p2, color):
-
     canvas_win.create_line(p1[0], p1[1], p2[0], p2[1], fill = color)
     
     
+def cda_method(p1, p2):
+
+    x1 = p1[0]
+    y1 = p1[1]
+    x2 = p2[0]
+    y2 = p2[1]
+
+    dx = x2 - x1
+    dy = y2 - y1
+
+    if (abs(dx) >= abs(dy)):
+        l = abs(dx)
+    else:
+        l = abs(dy)
+
+    dx /= l
+    dy /= l
+
+    x = x1
+    y = y1
+
+    dots = [[x, y]]
+
+    for _ in range(int(l)):
+        x += dx
+        y += dy
+
+        dot = [x, y]
+
+        dots.append(dot)
+
+    return dots
+        
+
+def draw_line(dots, color):
+
+    for dot in dots:
+        canvas_win.create_line(dot[0], dot[1], dot[0] + 1, dot[1], fill = color)
+        #canvas_win.create_oval(dot[0] - POINT_RAD, dot[1] - POINT_RAD, dot[0] + POINT_RAD, dot[1] + POINT_RAD, outline = color, fill = color)
 
 
-
-
+    # create_oval(x1_trans - POINT_RAD, -(y1_trans - POINT_RAD) + CV_HEIGHT, x1_trans + POINT_RAD, -(y1_trans + POINT_RAD) + CV_HEIGHT, width = 1, outline = POINT_COLOR, fill = POINT_COLOR)
 
 
 
