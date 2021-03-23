@@ -97,10 +97,14 @@ def parse_methods(p1, p2, option, option_color):
 
     color = parse_color(option_color)
 
-    if (option == 1):
-        messagebox.showinfo("Метод", "Брезенхем (int)")
-    elif (option == 3):
-        messagebox.showinfo("Метод", "Брезенхем (float)")
+    if (option == 3):
+        #messagebox.showinfo("Метод", "Брезенхем (int)")
+        dots = bresenham_int(p1, p2)
+        draw_line(dots, color)
+    elif (option == 1):
+        #messagebox.showinfo("Метод", "Брезенхем (float)")
+        dots = bresenham_float(p1, p2)
+        draw_line(dots, color)
     elif (option == 5):
         messagebox.showinfo("Метод", "Брезенхем (smooth)")
     elif (option == 2):
@@ -143,13 +147,17 @@ def cda_method(p1, p2):
 
     dots = [[x, y]]
 
-    for _ in range(int(l)):
+    i = 1
+
+    while (i < l):
         x += dx
         y += dy
 
         dot = [x, y]
 
         dots.append(dot)
+
+        i += 1
 
     return dots
         
@@ -161,11 +169,122 @@ def draw_line(dots, color):
         #canvas_win.create_oval(dot[0] - POINT_RAD, dot[1] - POINT_RAD, dot[0] + POINT_RAD, dot[1] + POINT_RAD, outline = color, fill = color)
 
 
-    # create_oval(x1_trans - POINT_RAD, -(y1_trans - POINT_RAD) + CV_HEIGHT, x1_trans + POINT_RAD, -(y1_trans + POINT_RAD) + CV_HEIGHT, width = 1, outline = POINT_COLOR, fill = POINT_COLOR)
+def sign(difference):
+    if (difference < 0):
+        return -1
+    elif (difference == 0):
+        return 0
+    else:
+        return 1
 
 
+def bresenham_float(p1, p2):
+    x1 = p1[0]
+    y1 = p1[1]
+    x2 = p2[0]
+    y2 = p2[1]
+
+    x = x1
+    y = y1
+
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+
+    s1 = sign(x2 - x1)
+    s2 = sign(y2 - y1)
+
+    if (dy > dx):
+        tmp = dx
+        dx = dy
+        dy = tmp
+        swaped = 1
+    else:
+        swaped = 0
+
+    m = dy / dx
+    e = m - 0.5 # 0.5?
+    #m = dy / dx ???
+
+    i = 1
+
+    dots = []
+
+    while (i <= dx + 1):
+        dot = [x, y]
+        dots.append(dot)
+
+        while (e >= 0):
+            if (swaped):
+                x = x + s1
+            else:
+                y = y + s2
+
+            e = e - 1
+
+        if (swaped):
+            y = y + s2
+        else:
+            x = x + s1
+
+        e = e + m
+
+        i += 1
+
+    return dots
 
 
+def bresenham_int(p1, p2):
+    x1 = p1[0]
+    y1 = p1[1]
+    x2 = p2[0]
+    y2 = p2[1]
+
+    x = x1
+    y = y1
+
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+
+    s1 = sign(x2 - x1)
+    s2 = sign(y2 - y1)
+
+    if (dy > dx):
+        tmp = dx
+        dx = dy
+        dy = tmp
+        swaped = 1
+    else:
+        swaped = 0
+
+    e = 2 * dy - dx # 0.5?
+    #m = dy / dx ???
+
+    i = 1
+
+    dots = []
+
+    while (i <= dx + 1):
+        dot = [x, y]
+        dots.append(dot)
+
+        while (e >= 0):
+            if (swaped):
+                x = x + s1
+            else:
+                y = y + s2
+
+            e = e - 2 * dx
+
+        if (swaped):
+            y = y + s2
+        else:
+            x = x + s1
+
+        e = e + 2 * dy
+
+        i += 1
+
+    return dots
 
 
 
