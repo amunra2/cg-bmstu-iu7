@@ -1,6 +1,6 @@
 from tkinter import Tk, Button, Label, Entry, END, Listbox, Canvas, Radiobutton, LEFT, RIGHT, IntVar
 from tkinter import messagebox
-from math import sqrt, acos, degrees, pi, sin, cos, radians
+from math import sqrt, acos, degrees, pi, sin, cos, radians, floor, fabs
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -116,7 +116,9 @@ def parse_methods(p1, p2, option, option_color):
         dots = cda_method(p1, p2, color)
         draw_line(dots)
     elif (option == 4):
-        messagebox.showinfo("Метод", "Ву")
+        #messagebox.showinfo("Метод", "Ву")
+        dots = wu(p1, p2, color)
+        draw_line(dots)
     elif (option == 6):
         #messagebox.showinfo("Метод", "Библиотечная")
         lib_method(p1, p2, color)
@@ -124,8 +126,78 @@ def parse_methods(p1, p2, option, option_color):
         messagebox.showerror("Ошибка", "Неизвестный алгоритм")
 
 
+def wu(p1, p2, color):
+
+    x1 = p1[0]
+    y1 = p1[1]
+    x2 = p2[0]
+    y2 = p2[1]
+
+    dx = x2 - x1
+    dy = y2 - y1
+
+    m = 1
+    step = 1
+    intens = 255
+
+    dots = []
+
+    if (fabs(dy) > fabs(dx)):
+        if (dy != 0):
+            m = dx / dy
+        m1 = m
+
+        if (y1 > y2):
+            m1 *= -1
+            step *= -1
+
+        for i in range(round(y1), round(y2) + 1, step):
+            d1 = x1 - floor(x1)
+            d2 = 1 - d1
+
+            dot1 = [int(x1), i, choose_color(color, round(fabs(d2) * intens))]
+
+            dot2 = [int(x1) + 1, i, choose_color(color, round(fabs(d1) * intens))]
+
+            dots.append(dot1)
+            dots.append(dot2)
+
+            x1 += m1
+    
+    else:
+        if (dx != 0):
+            m = dy / dx
+
+        m1 = m
+
+        if (x1 > x2):
+            step *= -1
+            m1 *= -1
+
+        for i in range(round(x1), round(x2) + 1, step):
+            d1 = y1 - floor(y1)
+            d2 = 1 - d1
+
+            dot1 = [i, int(y1), choose_color(color, round(fabs(d2) * intens))]
+
+            dot2 = [i, int(y1) + 1, choose_color(color, round(fabs(d1) * intens))]
+
+            dots.append(dot1)
+            dots.append(dot2)
+
+            y1 += m1
+
+    return dots
+
+
+
+
+
+
+
+
 def lib_method(p1, p2, color):
-    canvas_win.create_line(p1[0], p1[1], p2[0], p2[1], fill = color)
+    canvas_win.create_line(p1[0], p1[1], p2[0], p2[1], fill = color.hex)
     
     
 def cda_method(p1, p2, color):
