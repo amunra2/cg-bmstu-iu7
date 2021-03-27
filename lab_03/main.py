@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+import colorutils as cu
+
 
 WIN_WIDTH = 1500
 WIN_HEIGHT = 900
@@ -13,7 +15,7 @@ WIN_COLOR = "#bf80ff"
 
 CV_WIDE = 900
 CV_HEIGHT = 900
-CV_COLOR = "#f3e6ff" #"#cce6ff"
+CV_COLOR = "#ffffff" #f3e6ff" #"#cce6ff"
 #CV_COLOR
 #СV_COLOR
 MAIN_TEXT_COLOR = "#b566ff" #"lightblue" a94dff
@@ -21,7 +23,7 @@ TEXT_COLOR = "#ce99ff"
 
 BOX_COLOR = "#dab3ff"
 
-POINT_RAD = 1 #3.5
+POINT_RAD = 0.5 #3.5
 
 
 
@@ -39,13 +41,13 @@ def parse_color(option_color):
     color = "black" # None
 
     if (option_color == 1):
-        color = "blue"
+        color = cu.Color((0, 0, 255)) # "blue"
     elif (option_color == 2):
         color = "orange"
     elif (option_color == 3):
-        color = "black"
+        color = cu.Color((0, 0, 0)) #"black"
     elif (option_color == 4):
-        color = CV_COLOR
+        color = cu.Color((255, 255, 255)) # СV_COLOR
     # else:
     #     messagebox.showerror("Ошибка", "Нет такого цвета")
 
@@ -77,7 +79,7 @@ def parse_spektr(option, option_color):
 
 def parse_line(option, option_color):
     try:
-        x1 = int(x1_line.get()) # float?
+        x1 = int(x1_line.get())
         y1 = int(y1_line.get())
         x2 = int(x2_line.get())
         y2 = int(y2_line.get())
@@ -99,18 +101,20 @@ def parse_methods(p1, p2, option, option_color):
 
     if (option == 3):
         #messagebox.showinfo("Метод", "Брезенхем (int)")
-        dots = bresenham_int(p1, p2)
-        draw_line(dots, color)
+        dots = bresenham_int(p1, p2, color)
+        draw_line(dots)
     elif (option == 1):
         #messagebox.showinfo("Метод", "Брезенхем (float)")
-        dots = bresenham_float(p1, p2)
-        draw_line(dots, color)
+        dots = bresenham_float(p1, p2, color)
+        draw_line(dots)
     elif (option == 5):
-        messagebox.showinfo("Метод", "Брезенхем (smooth)")
+        #messagebox.showinfo("Метод", "Брезенхем (smooth)")
+        dots = bresenham_smooth(p1, p2, color)
+        draw_line(dots)
     elif (option == 2):
         #messagebox.showinfo("Метод", "ЦДА")
-        dots = cda_method(p1, p2)
-        draw_line(dots, color)
+        dots = cda_method(p1, p2, color)
+        draw_line(dots)
     elif (option == 4):
         messagebox.showinfo("Метод", "Ву")
     elif (option == 6):
@@ -124,7 +128,7 @@ def lib_method(p1, p2, color):
     canvas_win.create_line(p1[0], p1[1], p2[0], p2[1], fill = color)
     
     
-def cda_method(p1, p2):
+def cda_method(p1, p2, color):
 
     x1 = p1[0]
     y1 = p1[1]
@@ -145,7 +149,7 @@ def cda_method(p1, p2):
     x = x1
     y = y1
 
-    dots = [[x, y]]
+    dots = [[x, y, color]]
 
     i = 1
 
@@ -153,7 +157,7 @@ def cda_method(p1, p2):
         x += dx
         y += dy
 
-        dot = [x, y]
+        dot = [x, y, color]
 
         dots.append(dot)
 
@@ -162,11 +166,11 @@ def cda_method(p1, p2):
     return dots
         
 
-def draw_line(dots, color):
+def draw_line(dots):
 
     for dot in dots:
-        canvas_win.create_line(dot[0], dot[1], dot[0] + 1, dot[1], fill = color)
-        #canvas_win.create_oval(dot[0] - POINT_RAD, dot[1] - POINT_RAD, dot[0] + POINT_RAD, dot[1] + POINT_RAD, outline = color, fill = color)
+        canvas_win.create_line(dot[0], dot[1], dot[0] + 1, dot[1], fill = dot[2].hex)
+        #canvas_win.create_oval(dot[0] - POINT_RAD, dot[1] - POINT_RAD, dot[0] + POINT_RAD, dot[1] + POINT_RAD, outline = dot[2].hex, fill = dot[2].hex)
 
 
 def sign(difference):
@@ -178,7 +182,7 @@ def sign(difference):
         return 1
 
 
-def bresenham_float(p1, p2):
+def bresenham_float(p1, p2, color):
     x1 = p1[0]
     y1 = p1[1]
     x2 = p2[0]
@@ -210,7 +214,7 @@ def bresenham_float(p1, p2):
     dots = []
 
     while (i <= dx + 1):
-        dot = [x, y]
+        dot = [x, y, color]
         dots.append(dot)
 
         while (e >= 0):
@@ -233,7 +237,7 @@ def bresenham_float(p1, p2):
     return dots
 
 
-def bresenham_int(p1, p2):
+def bresenham_int(p1, p2, color):
     x1 = p1[0]
     y1 = p1[1]
     x2 = p2[0]
@@ -264,7 +268,7 @@ def bresenham_int(p1, p2):
     dots = []
 
     while (i <= dx + 1):
-        dot = [x, y]
+        dot = [x, y, color]
         dots.append(dot)
 
         while (e >= 0):
@@ -287,7 +291,70 @@ def bresenham_int(p1, p2):
     return dots
 
 
+def choose_color(color, intens):
+    return color + (intens, intens, intens)
 
+
+def bresenham_smooth(p1, p2, color):
+    x1 = p1[0]
+    y1 = p1[1]
+    x2 = p2[0]
+    y2 = p2[1]
+
+    x = x1
+    y = y1
+
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+
+    s1 = sign(x2 - x1)
+    s2 = sign(y2 - y1)
+
+    if (dy > dx):
+        tmp = dx
+        dx = dy
+        dy = tmp
+        swaped = 1
+    else:
+        swaped = 0
+
+    intens = 255
+
+
+
+    m = dy / dx
+    e = intens / 2
+
+    m *= intens
+    w = intens - m
+
+    dots = [[x, y, choose_color(color, round(e))]]
+
+
+
+    i = 1
+
+    while (i <= dx):
+        
+        if (e < w):
+            if (swaped):
+                y += s2
+            else:
+                x += s1
+            e += m
+        else:
+            x += s1
+            y += s2
+
+            e -= w
+
+        dot = [x, y, choose_color(color, round(e))]
+
+        dots.append(dot)
+
+        i += 1
+
+    return dots
 
 
 
