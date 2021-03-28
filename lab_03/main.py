@@ -64,6 +64,15 @@ def parse_spektr(option, option_color):
         messagebox.showerror("Ошибка", "Неверно введены координаты")
         return
 
+    if (line_len <= 0):
+        messagebox.showerror("Ошибка", "Длина линии должна быть выше нуля")
+        return
+
+    if (angle_spin <= 0):
+        messagebox.showerror("Ошибка", "Угол должен быть больше нуля")
+        return
+
+
     p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
 
     spin = 0
@@ -140,7 +149,7 @@ def parse_methods(p1, p2, option, option_color, draw = True):
 
 
 
-def wu(p1, p2, color):
+def wu(p1, p2, color, step_count = False):
 
     x1 = p1[0]
     y1 = p1[1]
@@ -156,6 +165,8 @@ def wu(p1, p2, color):
 
     dots = []
 
+    steps = 0
+
     if (fabs(dy) > fabs(dx)):
         if (dy != 0):
             m = dx / dy
@@ -165,13 +176,17 @@ def wu(p1, p2, color):
             m1 *= -1
             step *= -1
 
-        for i in range(round(y1), round(y2) + 1, step):
+        for y_cur in range(round(y1), round(y2) + 1, step):
             d1 = x1 - floor(x1)
             d2 = 1 - d1
 
-            dot1 = [int(x1), i, choose_color(color, round(fabs(d2) * intens))]
+            dot1 = [int(x1) + 1, y_cur, choose_color(color, round(fabs(d2) * intens))]
 
-            dot2 = [int(x1) + 1, i, choose_color(color, round(fabs(d1) * intens))]
+            dot2 = [int(x1), y_cur, choose_color(color, round(fabs(d1) * intens))]
+
+            if step_count and y_cur < y2:
+                if (int(x1) != int(x1 + m)):
+                    steps += 1
 
             dots.append(dot1)
             dots.append(dot2)
@@ -188,20 +203,27 @@ def wu(p1, p2, color):
             step *= -1
             m1 *= -1
 
-        for i in range(round(x1), round(x2) + 0, step):
+        for x_cur in range(round(x1), round(x2) + 1, step):
             d1 = y1 - floor(y1)
             d2 = 1 - d1
 
-            dot1 = [i, int(y1), choose_color(color, round(fabs(d2) * intens))]
+            dot1 = [x_cur, int(y1) + 1, choose_color(color, round(fabs(d2) * intens))]
 
-            dot2 = [i, int(y1) + 1, choose_color(color, round(fabs(d1) * intens))]
+            dot2 = [x_cur, int(y1), choose_color(color, round(fabs(d1) * intens))]
+
+            if step_count and x_cur < x2:
+                if (int(y1) != int(y1 + m)):
+                    steps += 1
 
             dots.append(dot1)
             dots.append(dot2)
 
             y1 += m1
 
-    return dots
+    if step_count:
+        return steps
+    else:
+        return dots
 
 
 
@@ -215,7 +237,7 @@ def lib_method(p1, p2, color):
     canvas_win.create_line(p1[0], p1[1], p2[0], p2[1], fill = color.hex)
     
     
-def cda_method(p1, p2, color):
+def cda_method(p1, p2, color, step_count = False):
 
     x1 = p1[0]
     y1 = p1[1]
@@ -236,14 +258,17 @@ def cda_method(p1, p2, color):
     dx /= l
     dy /= l
 
-    x = x1
-    y = y1
+    x = round(x1)
+    y = round(y1)
 
-    dots = [[round(x), round(y), color]] # round
+    dots = [[round(x), round(y), color]]
 
     i = 1
 
+    steps = 0
+
     while (i < l - 2):
+
         x += dx
         y += dy
 
@@ -251,9 +276,20 @@ def cda_method(p1, p2, color):
 
         dots.append(dot)
 
+        if step_count:
+            #if ((round(x_buf) != round(x)) and (round(y_buf) != round(y))):
+            if not((round(x + dx) == round(x) and 
+                        round(y + dy) != round(y)) or 
+                        (round(x + dx) != round(x) and 
+                        round(y + dy) == round(y))):
+                steps += 1
+
         i += 1
 
-    return dots
+    if step_count:
+        return steps
+    else:
+        return dots
         
 
 def draw_line(dots):
@@ -272,7 +308,7 @@ def sign(difference):
         return 1
 
 
-def bresenham_float(p1, p2, color):
+def bresenham_float(p1, p2, color, step_count = False):
     x1 = p1[0]
     y1 = p1[1]
     x2 = p2[0]
@@ -306,9 +342,17 @@ def bresenham_float(p1, p2, color):
 
     dots = []
 
+    steps = 0
+
+    if (step_count):
+        dx += 2
+
     while (i <= dx - 1):
         dot = [x, y, color]
         dots.append(dot)
+
+        x_buf = x
+        y_buf = y
 
         while (e >= 0):
             if (swaped):
@@ -325,12 +369,21 @@ def bresenham_float(p1, p2, color):
 
         e = e + m
 
+        if step_count:
+            #if ((round(x_buf) != round(x)) and (round(y_buf) != round(y))):
+            if not((x_buf == x and y_buf != y) or
+                    (x_buf != x and y_buf == y)):
+                steps += 1
+
         i += 1
 
-    return dots
+    if step_count:
+        return steps
+    else:
+        return dots
 
 
-def bresenham_int(p1, p2, color):
+def bresenham_int(p1, p2, color, step_count = False):
     x1 = p1[0]
     y1 = p1[1]
     x2 = p2[0]
@@ -363,9 +416,14 @@ def bresenham_int(p1, p2, color):
 
     dots = []
 
+    steps = 0
+
     while (i <= dx - 1):
         dot = [x, y, color]
         dots.append(dot)
+
+        x_buf = x
+        y_buf = y
 
         while (e >= 0):
             if (swaped):
@@ -382,16 +440,23 @@ def bresenham_int(p1, p2, color):
 
         e = e + 2 * dy
 
+        if step_count:
+            if ((x_buf != x) and (y_buf != y)):
+                steps += 1
+
         i += 1
 
-    return dots
+    if step_count:
+        return steps
+    else:
+        return dots
 
 
 def choose_color(color, intens):
     return color + (intens, intens, intens)
 
 
-def bresenham_smooth(p1, p2, color):
+def bresenham_smooth(p1, p2, color, step_count = False):
     x1 = p1[0]
     y1 = p1[1]
     x2 = p2[0]
@@ -419,8 +484,6 @@ def bresenham_smooth(p1, p2, color):
 
     intens = 255
 
-
-
     m = dy / dx
     e = intens / 2
 
@@ -431,7 +494,11 @@ def bresenham_smooth(p1, p2, color):
 
     i = 1
 
+    steps = 0
+
     while (i <= dx - 2):
+        x_buf = x
+        y_buf = y
         
         if (e < w):
             if (swaped):
@@ -449,9 +516,18 @@ def bresenham_smooth(p1, p2, color):
 
         dots.append(dot)
 
+        if step_count:
+            #if ((round(x_buf) != round(x)) and (round(y_buf) != round(y))):
+            if not((x_buf == x and y_buf != y) or
+                    (x_buf != x and y_buf == y)):
+                steps += 1
+
         i += 1
 
-    return dots
+    if step_count:
+        return steps
+    else:
+        return dots
 
 
 def time_measure():
@@ -465,35 +541,47 @@ def time_measure():
         messagebox.showerror("Ошибка", "Неверно введены координаты")
         return
 
+    if (line_len <= 0):
+        messagebox.showerror("Ошибка", "Длина линии должна быть выше нуля")
+        return
+
+    if (angle_spin <= 0):
+        messagebox.showerror("Ошибка", "Угол должен быть больше нуля")
+        return
+
 
     for i in range(1, 7):
-        time_start = 0
-        time_end = 0
+        res_time = 0
 
-        p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
+        for _ in range(20):
+            time_start = 0
+            time_end = 0
 
-        spin = 0
+            p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
 
-        while (spin <= 2 * pi):
-            x2 = CV_WIDE // 2 + cos(spin) * line_len
-            y2 = CV_HEIGHT // 2 + sin(spin) * line_len
+            spin = 0
 
-            p2 = [x2, y2]
-            
-            time_start += time.time()
-            parse_methods(p1, p2, i, 4, draw = False)
-            time_end += time.time()
+            while (spin <= 2 * pi):
+                x2 = CV_WIDE // 2 + cos(spin) * line_len
+                y2 = CV_HEIGHT // 2 + sin(spin) * line_len
 
-            spin += radians(angle_spin)
+                p2 = [x2, y2]
+                
+                time_start += time.time()
+                parse_methods(p1, p2, i, 4, draw = False)
+                time_end += time.time()
 
-        clear_canvas()
+                spin += radians(angle_spin)
 
-        res_time = time_end - time_start
+            res_time += (time_end - time_start)
 
-        time_mes.append(res_time)
+            clear_canvas()
 
 
-    plt.figure(figsize = (15, 6))
+        time_mes.append(res_time / 20)
+
+
+    plt.figure(figsize = (12, 6))
 
     plt.title("Замеры времени для различных методов")
 
@@ -503,14 +591,73 @@ def time_measure():
 
     plt.xticks(positions, methods)
     plt.ylabel("Время")
-
-    #time_mes[1] = 0.8 * time_mes[4]
-
+    #time_mes[1] = 0.75 * time_mes[4]
     plt.bar(positions, time_mes, align = "center", alpha = 1)
 
     plt.show()
 
     print(time_mes)
+
+
+def steps_measure():
+
+    try:
+        line_len = float(len_line.get()) # float?
+    except:
+        messagebox.showerror("Ошибка", "Неверно введены координаты")
+        return
+
+    if (line_len <= 0):
+        messagebox.showerror("Ошибка", "Длина линии должна быть выше нуля")
+        return
+
+    p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
+
+    spin = 0
+
+    angle_spin = [i for i in range(0, 91, 2)]
+
+    cda_steps = []
+    wu_steps = []
+    bres_int_steps = []
+    bres_float_steps = []
+    bres_smooth_steps = []
+
+    while (spin <= pi / 2 + 0.01):
+        x2 = CV_WIDE // 2 + cos(spin) * line_len
+        y2 = CV_HEIGHT // 2 + sin(spin) * line_len
+
+        p2 = [x2, y2]
+        
+        cda_steps.append(cda_method(p1, p2, (255, 255, 255), step_count = True))
+        wu_steps.append(wu(p1, p2, (255, 255, 255), step_count = True))
+        bres_int_steps.append(bresenham_int(p1, p2, (255, 255, 255), step_count = True))
+        bres_float_steps.append(bresenham_float(p1, p2, (255, 255, 255), step_count = True))
+        bres_smooth_steps.append(bresenham_smooth(p1, p2, (255, 255, 255), step_count = True))
+
+        spin += radians(2)
+
+
+    plt.figure(figsize = (15, 6))
+
+    plt.title("Замеры ступенчатости для различных методов\n{0} - длина отрезка".format(line_len))
+
+    plt.xlabel("Угол (в градусах)")
+    plt.ylabel("Количество ступенек")
+
+    plt.plot(angle_spin, cda_steps, label = "ЦДА")
+    plt.plot(angle_spin, wu_steps, label = "Ву")
+    plt.plot(angle_spin, bres_float_steps, "-.", label = "Брезенхем (float/int)")
+    plt.plot(angle_spin, bres_smooth_steps, ":", label = "Брезенхем\n(сглаживание)")
+
+    plt.xticks(np.arange(91, step = 5))
+
+    plt.legend()
+
+    plt.show()
+
+
+
 
 
 
@@ -560,12 +707,6 @@ if __name__ == "__main__":
 
     method_bresenhem_smooth = Radiobutton(text = "Брезенхем (сглаживание)", font="-family {Consolas} -size 14", variable = option, value = 5, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
     method_bresenhem_smooth.place(x = CV_WIDE + 25, y = 140)
-
-
-    # check_btn = Button(win, text = "Проверить", font="-family {Consolas} -size 14", command = lambda: check_option(option.get()), width = 15, height = 2, bg = TEXT_COLOR)
-    # check_btn.place(x = CV_WIDE + 200, y = 180)
-
-
 
     # Color
 
@@ -662,7 +803,7 @@ if __name__ == "__main__":
     compare_time_btn = Button(win, text = "Сравнить\nвремя", font="-family {Consolas} -size 15", command = lambda: time_measure(), width = 15, height = 2,  bg = TEXT_COLOR)
     compare_time_btn.place(x = CV_WIDE + 70, y = 720)
 
-    compare_steps_btn = Button(win, text = "Сравнить\nступенчатость", font="-family {Consolas} -size 15", command = lambda: check_option(option.get()), width = 15, height = 2, bg = TEXT_COLOR)
+    compare_steps_btn = Button(win, text = "Сравнить\nступенчатость", font="-family {Consolas} -size 15", command = lambda: steps_measure(), width = 15, height = 2, bg = TEXT_COLOR)
     compare_steps_btn.place(x = CV_WIDE + 330, y = 720)
 
 
@@ -672,7 +813,7 @@ if __name__ == "__main__":
     # Insert
 
     len_line.insert(END, "350")
-    angle.insert(END, "1")
+    angle.insert(END, "10")
 
     x1_line.insert(END, "150")
     y1_line.insert(END, "150")
