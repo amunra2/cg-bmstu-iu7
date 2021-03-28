@@ -41,11 +41,11 @@ def parse_color(option_color):
     color = "black" # None
 
     if (option_color == 1):
-        color = cu.Color((0, 0, 255)) # "blue"
+        color = cu.Color((0, 0, 0)) # "black"
     elif (option_color == 2):
-        color = "orange"
+        color = cu.Color((255, 0, 0)) # "red"
     elif (option_color == 3):
-        color = cu.Color((0, 0, 0)) #"black"
+        color = cu.Color((0, 0, 255)) # "blue"
     elif (option_color == 4):
         color = cu.Color((255, 255, 255)) # СV_COLOR
     # else:
@@ -126,6 +126,8 @@ def parse_methods(p1, p2, option, option_color):
         messagebox.showerror("Ошибка", "Неизвестный алгоритм")
 
 
+
+
 def wu(p1, p2, color):
 
     x1 = p1[0]
@@ -174,7 +176,7 @@ def wu(p1, p2, color):
             step *= -1
             m1 *= -1
 
-        for i in range(round(x1), round(x2) + 1, step):
+        for i in range(round(x1), round(x2) + 0, step):
             d1 = y1 - floor(y1)
             d2 = 1 - d1
 
@@ -192,7 +194,8 @@ def wu(p1, p2, color):
 
 
 
-
+def clear_canvas():
+    canvas_win.delete("all")
 
 
 
@@ -206,6 +209,9 @@ def cda_method(p1, p2, color):
     y1 = p1[1]
     x2 = p2[0]
     y2 = p2[1]
+
+    if (x2 - x1 == 0) and (y2 - y1 == 0):
+        return [x1, y1, color]
 
     dx = x2 - x1
     dy = y2 - y1
@@ -225,7 +231,7 @@ def cda_method(p1, p2, color):
 
     i = 1
 
-    while (i < l):
+    while (i < l - 2):
         x += dx
         y += dy
 
@@ -260,6 +266,9 @@ def bresenham_float(p1, p2, color):
     x2 = p2[0]
     y2 = p2[1]
 
+    if (x2 - x1 == 0) and (y2 - y1 == 0):
+        return [x1, y1, color]
+
     x = x1
     y = y1
 
@@ -285,7 +294,7 @@ def bresenham_float(p1, p2, color):
 
     dots = []
 
-    while (i <= dx + 1):
+    while (i <= dx - 1):
         dot = [x, y, color]
         dots.append(dot)
 
@@ -315,6 +324,9 @@ def bresenham_int(p1, p2, color):
     x2 = p2[0]
     y2 = p2[1]
 
+    if (x2 - x1 == 0) and (y2 - y1 == 0):
+        return [x1, y1, color]
+
     x = x1
     y = y1
 
@@ -339,7 +351,7 @@ def bresenham_int(p1, p2, color):
 
     dots = []
 
-    while (i <= dx + 1):
+    while (i <= dx - 1):
         dot = [x, y, color]
         dots.append(dot)
 
@@ -373,6 +385,9 @@ def bresenham_smooth(p1, p2, color):
     x2 = p2[0]
     y2 = p2[1]
 
+    if (x2 - x1 == 0) and (y2 - y1 == 0):
+        return [x1, y1, color]
+
     x = x1
     y = y1
 
@@ -402,11 +417,9 @@ def bresenham_smooth(p1, p2, color):
 
     dots = [[x, y, choose_color(color, round(e))]]
 
-
-
     i = 1
 
-    while (i <= dx):
+    while (i <= dx - 2):
         
         if (e < w):
             if (swaped):
@@ -457,7 +470,7 @@ if __name__ == "__main__":
     method_text.place(x = CV_WIDE + 20, y = 30)
 
     option = IntVar()
-    option.set(0)
+    option.set(1)
 
     method_cda = Radiobutton(text = "ЦДА", font="-family {Consolas} -size 14", variable = option, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
     method_cda.place(x = CV_WIDE + 400, y = 70)
@@ -495,17 +508,17 @@ if __name__ == "__main__":
 
 
     option_color = IntVar()
-    option_color.set(0)
+    option_color.set(1)
 
-    color_line_blue = Radiobutton(text = "Синий", font="-family {Consolas} -size 14", variable = option_color, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
-    color_line_blue.place(x = CV_WIDE + 25, y = 250)
+    color_line_black = Radiobutton(text = "Черный", font="-family {Consolas} -size 14", variable = option_color, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    color_line_black.place(x = CV_WIDE + 25, y = 250)
 
-    color_line_black = Radiobutton(text = "Черный", font="-family {Consolas} -size 14", variable = option_color, value = 3, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
-    color_line_black.place(x = CV_WIDE + 25, y = 285)
+    color_line_blue = Radiobutton(text = "Синий", font="-family {Consolas} -size 14", variable = option_color, value = 3, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    color_line_blue.place(x = CV_WIDE + 25, y = 285)
 
 
-    color_line_orange = Radiobutton(text = "Оранжевый", font="-family {Consolas} -size 14", variable = option_color, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
-    color_line_orange.place(x = CV_WIDE + 400, y = 250)
+    color_line_red = Radiobutton(text = "Красный", font="-family {Consolas} -size 14", variable = option_color, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    color_line_red.place(x = CV_WIDE + 400, y = 250)
 
     color_line_background = Radiobutton(text = "Фоновый", font="-family {Consolas} -size 14", variable = option_color, value = 4, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
     color_line_background.place(x = CV_WIDE + 400, y = 285)
@@ -584,91 +597,19 @@ if __name__ == "__main__":
     compare_steps_btn.place(x = CV_WIDE + 330, y = 720)
 
 
-    clear_win_btn = Button(win, text = "Очистить экран", font="-family {Consolas} -size 15", command = lambda: check_option(option.get()), width = 25, height = 2, bg = TEXT_COLOR)
+    clear_win_btn = Button(win, text = "Очистить экран", font="-family {Consolas} -size 15", command = lambda: clear_canvas(), width = 25, height = 2, bg = TEXT_COLOR)
     clear_win_btn.place(x = CV_WIDE + 150, y = 800)
 
+    # Insert
 
+    len_line.insert(END, "350")
+    angle.insert(END, "1")
 
+    x1_line.insert(END, "150")
+    y1_line.insert(END, "150")
 
+    x2_line.insert(END, "500")
+    y2_line.insert(END, "170")
 
-    # # Figure center
-    # figure_c = Label(win, text = "Центр фигуры: (%3.2f;%3.2f)" %(x_all[0][0], y_all[0][0]), width = 36, font="-family {Consolas} -size 17", bg = TEXT_COLOR)
-    # figure_c.place(x = CV_WIDE + 1, y = 850)
-
-    # # Center
-    # center_label = Label(win, text = "Центр(для масштабирования и поворота)", font="-family {Consolas} -size 16", bg = WIN_COLOR)
-    # center_label.place (x = CV_WIDE + 15, y = 20)
-
-    # center_x_label = Label(win, text = "X:", font="-family {Consolas} -size 14", bg = WIN_COLOR)
-    # center_x_label.place(x = CV_WIDE + 70, y = 50)
-    # center_x = Entry(win, font="-family {Consolas} -size 14", width = 9)
-    # center_x.insert(END, "0")
-    # center_x.place (x = CV_WIDE + 100, y = 50)
-
-    # center_y_label = Label(win, text = "Y:", font="-family {Consolas} -size 14", bg = WIN_COLOR)
-    # center_y_label.place(x = CV_WIDE + 270, y = 50)
-    # center_y = Entry(win, font="-family {Consolas} -size 14", width = 9)
-    # center_y.insert(END, "0")
-    # center_y.place (x = CV_WIDE + 300, y = 50)
-
-    # # Spin
-    # spin_label = Label(win, text = "Поворот", width = 36, font="-family {Consolas} -size 18", bg = TEXT_COLOR)
-    # spin_label.place(x = CV_WIDE + 1, y = 110)
-
-    # spin_angle_label = Label(win, text = "Угол°: ", font="-family {Consolas} -size 16", bg = WIN_COLOR)
-    # spin_angle_label.place(x = CV_WIDE + 160, y = 155)
-    # spin_angle = Entry(win, font="-family {Consolas} -size 16", width = 9)
-    # spin_angle.insert(END, "0")
-    # spin_angle.place (x = CV_WIDE + 240, y = 155)
-
-    # spin_btn = Button(win, text = "Повернуть", font="-family {Consolas} -size 14", command = lambda: parse_spin(), width = 15, height = 2, bg = TEXT_COLOR)
-    # spin_btn.place(x = CV_WIDE + 160, y = 200)
-
-    # # Scale
-    # scale_label = Label(win, text = "Масштабирование", width = 36, font="-family {Consolas} -size 18", bg = TEXT_COLOR)
-    # scale_label.place(x = CV_WIDE + 1, y = 300)
-
-    # scale_x_label = Label(win, text = "kx: ", font="-family {Consolas} -size 16", bg = WIN_COLOR)
-    # scale_x_label.place(x = CV_WIDE + 100, y = 360)
-    # scale_x = Entry(win, font="-family {Consolas} -size 14", width = 9)
-    # scale_x.insert(END, "1")
-    # scale_x.place (x = CV_WIDE + 140, y = 360)
-
-    # scale_y_label = Label(win, text = "ky: ", font="-family {Consolas} -size 16", bg = WIN_COLOR)
-    # scale_y_label.place(x = CV_WIDE + 270, y = 360)
-    # scale_y = Entry(win, font="-family {Consolas} -size 14", width = 9)
-    # scale_y.insert(END, "1")
-    # scale_y.place (x = CV_WIDE + 310, y = 360)
-
-    # scale_btn = Button(win, text = "Масштабировать", font="-family {Consolas} -size 14", command = lambda: parse_scale(), width = 15, height = 2, bg = TEXT_COLOR)
-    # scale_btn.place(x = CV_WIDE + 160, y = 420)
-
-    # # Move
-    # move_label = Label(win, text = "Перемещение", width = 36, font="-family {Consolas} -size 18", bg = TEXT_COLOR)
-    # move_label.place(x = CV_WIDE + 1, y = 520)
-
-    # move_x_label = Label(win, text = "dx: ", font="-family {Consolas} -size 16", bg = WIN_COLOR)
-    # move_x_label.place(x = CV_WIDE + 100, y = 580)
-    # move_x = Entry(win, font="-family {Consolas} -size 14", width = 9)
-    # move_x.insert(END, "0")
-    # move_x.place (x = CV_WIDE + 140, y = 580)
-
-    # move_y_label = Label(win, text = "dy: ", font="-family {Consolas} -size 16", bg = WIN_COLOR)
-    # move_y_label.place(x = CV_WIDE + 270, y = 580)
-    # move_y = Entry(win, font="-family {Consolas} -size 14", width = 9)
-    # move_y.insert(END, "0")
-    # move_y.place (x = CV_WIDE + 310, y = 580)
-
-    # move_btn = Button(win, text = "Передвинуть", font="-family {Consolas} -size 14", command = lambda: parse_move(), width = 15, height = 2, bg = TEXT_COLOR)
-    # move_btn.place(x = CV_WIDE + 160, y = 640)
-
-    # line = Label(win, text = "", width = 36, font="-family {Consolas} -size 18", bg = TEXT_COLOR)
-    # line.place(x = CV_WIDE + 1, y = 710)
-
-    # stab_back = Button(win, text = "Шаг назад", font="-family {Consolas} -size 14", command = lambda: step_backing(), width = 15, height = 2, bg = TEXT_COLOR)
-    # stab_back.place(x = CV_WIDE + 25, y = 760)
-
-    # clear = Button(win, text = "Сбросить", font="-family {Consolas} -size 14", command = lambda: reset(), width = 15, height = 2, bg = TEXT_COLOR)
-    # clear.place(x = CV_WIDE + 300, y = 760)
 
     win.mainloop()
