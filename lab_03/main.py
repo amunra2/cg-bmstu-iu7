@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+import time
+
 import colorutils as cu
 
 
@@ -93,32 +95,42 @@ def parse_line(option, option_color):
     parse_methods(p1, p2, option, option_color)
 
 
-def parse_methods(p1, p2, option, option_color):
+def parse_methods(p1, p2, option, option_color, draw = True):
 
     print("Method = ", option)
 
     color = parse_color(option_color)
 
-    if (option == 3):
+    if (option == 1):
         #messagebox.showinfo("Метод", "Брезенхем (int)")
-        dots = bresenham_int(p1, p2, color)
-        draw_line(dots)
-    elif (option == 1):
-        #messagebox.showinfo("Метод", "Брезенхем (float)")
         dots = bresenham_float(p1, p2, color)
-        draw_line(dots)
-    elif (option == 5):
-        #messagebox.showinfo("Метод", "Брезенхем (smooth)")
-        dots = bresenham_smooth(p1, p2, color)
-        draw_line(dots)
+        
+        if draw:
+            draw_line(dots)
     elif (option == 2):
-        #messagebox.showinfo("Метод", "ЦДА")
+        #messagebox.showinfo("Метод", "Брезенхем (float)")
         dots = cda_method(p1, p2, color)
-        draw_line(dots)
+
+        if draw:
+            draw_line(dots)
+    elif (option == 3):
+        #messagebox.showinfo("Метод", "Брезенхем (smooth)")
+        dots = bresenham_float(p1, p2, color)
+        
+        if draw:
+            draw_line(dots)
     elif (option == 4):
-        #messagebox.showinfo("Метод", "Ву")
+        #messagebox.showinfo("Метод", "ЦДА")
         dots = wu(p1, p2, color)
-        draw_line(dots)
+        
+        if draw:
+            draw_line(dots)
+    elif (option == 5):
+        #messagebox.showinfo("Метод", "Ву")
+        dots = bresenham_smooth(p1, p2, color)
+        
+        if draw:
+            draw_line(dots)
     elif (option == 6):
         #messagebox.showinfo("Метод", "Библиотечная")
         lib_method(p1, p2, color)
@@ -227,7 +239,7 @@ def cda_method(p1, p2, color):
     x = x1
     y = y1
 
-    dots = [[x, y, color]]
+    dots = [[round(x), round(y), color]] # round
 
     i = 1
 
@@ -235,7 +247,7 @@ def cda_method(p1, p2, color):
         x += dx
         y += dy
 
-        dot = [x, y, color]
+        dot = [round(x), round(y), color]
 
         dots.append(dot)
 
@@ -442,6 +454,63 @@ def bresenham_smooth(p1, p2, color):
     return dots
 
 
+def time_measure():
+
+    time_mes = []
+
+    try:
+        line_len = float(len_line.get()) # float?
+        angle_spin = float(angle.get())
+    except:
+        messagebox.showerror("Ошибка", "Неверно введены координаты")
+        return
+
+
+    for i in range(1, 7):
+        time_start = 0
+        time_end = 0
+
+        p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
+
+        spin = 0
+
+        while (spin <= 2 * pi):
+            x2 = CV_WIDE // 2 + cos(spin) * line_len
+            y2 = CV_HEIGHT // 2 + sin(spin) * line_len
+
+            p2 = [x2, y2]
+            
+            time_start += time.time()
+            parse_methods(p1, p2, i, 4, draw = False)
+            time_end += time.time()
+
+            spin += radians(angle_spin)
+
+        clear_canvas()
+
+        res_time = time_end - time_start
+
+        time_mes.append(res_time)
+
+
+    plt.figure(figsize = (15, 6))
+
+    plt.title("Замеры времени для различных методов")
+
+    positions = np.arange(6)
+
+    methods = ["Брезенхем (float)", "ЦДА", "Брезенхем (int)", "Ву", "Брезенхем (сглаживание)", "Библиотечная"]
+
+    plt.xticks(positions, methods)
+    plt.ylabel("Время")
+
+    #time_mes[1] = 0.8 * time_mes[4]
+
+    plt.bar(positions, time_mes, align = "center", alpha = 1)
+
+    plt.show()
+
+    print(time_mes)
 
 
 
@@ -590,7 +659,7 @@ if __name__ == "__main__":
 
     # Control buttons
 
-    compare_time_btn = Button(win, text = "Сравнить\nвремя", font="-family {Consolas} -size 15", command = lambda: check_option(option.get()), width = 15, height = 2,  bg = TEXT_COLOR)
+    compare_time_btn = Button(win, text = "Сравнить\nвремя", font="-family {Consolas} -size 15", command = lambda: time_measure(), width = 15, height = 2,  bg = TEXT_COLOR)
     compare_time_btn.place(x = CV_WIDE + 70, y = 720)
 
     compare_steps_btn = Button(win, text = "Сравнить\nступенчатость", font="-family {Consolas} -size 15", command = lambda: check_option(option.get()), width = 15, height = 2, bg = TEXT_COLOR)
