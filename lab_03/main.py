@@ -4,7 +4,6 @@ from math import sqrt, acos, degrees, pi, sin, cos, radians, floor, fabs
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import time
 
@@ -18,14 +17,11 @@ WIN_COLOR = "#bf80ff"
 CV_WIDE = 900
 CV_HEIGHT = 900
 CV_COLOR = "#ffffff" #f3e6ff" #"#cce6ff"
-#CV_COLOR
-#СV_COLOR
 MAIN_TEXT_COLOR = "#b566ff" #"lightblue" a94dff
 TEXT_COLOR = "#ce99ff"
 
 BOX_COLOR = "#dab3ff"
 
-POINT_RAD = 0.5 #3.5
 
 
 
@@ -50,15 +46,13 @@ def parse_color(option_color):
         color = cu.Color((0, 0, 255)) # "blue"
     elif (option_color == 4):
         color = cu.Color((255, 255, 255)) # СV_COLOR
-    # else:
-    #     messagebox.showerror("Ошибка", "Нет такого цвета")
 
     return color
 
 
 def parse_spektr(option, option_color):
     try:
-        line_len = float(len_line.get()) # float?
+        line_len = float(len_line.get())
         angle_spin = float(angle.get())
     except:
         messagebox.showerror("Ошибка", "Неверно введены координаты")
@@ -111,42 +105,39 @@ def parse_methods(p1, p2, option, option_color, draw = True):
     color = parse_color(option_color)
 
     if (option == 1):
-        #messagebox.showinfo("Метод", "Брезенхем (int)")
-        dots = bresenham_float(p1, p2, color)
+        dots = cda_method(p1, p2, color)
         
         if draw:
             draw_line(dots)
+
     elif (option == 2):
-        #messagebox.showinfo("Метод", "Брезенхем (float)")
-        dots = cda_method(p1, p2, color)
+        dots = bresenham_int(p1, p2, color)
 
         if draw:
             draw_line(dots)
+
     elif (option == 3):
-        #messagebox.showinfo("Метод", "Брезенхем (smooth)")
         dots = bresenham_float(p1, p2, color)
         
         if draw:
             draw_line(dots)
+
     elif (option == 4):
-        #messagebox.showinfo("Метод", "ЦДА")
         dots = wu(p1, p2, color)
         
         if draw:
             draw_line(dots)
+
     elif (option == 5):
-        #messagebox.showinfo("Метод", "Ву")
         dots = bresenham_smooth(p1, p2, color)
         
         if draw:
             draw_line(dots)
+
     elif (option == 6):
-        #messagebox.showinfo("Метод", "Библиотечная")
         lib_method(p1, p2, color)
     else:
         messagebox.showerror("Ошибка", "Неизвестный алгоритм")
-
-
 
 
 def wu(p1, p2, color, step_count = False):
@@ -155,6 +146,10 @@ def wu(p1, p2, color, step_count = False):
     y1 = p1[1]
     x2 = p2[0]
     y2 = p2[1]
+
+    if (x2 - x1 == 0) and (y2 - y1 == 0):
+        return [[x1, y1, color]]
+
 
     dx = x2 - x1
     dy = y2 - y1
@@ -176,7 +171,9 @@ def wu(p1, p2, color, step_count = False):
             m1 *= -1
             step *= -1
 
-        for y_cur in range(round(y1), round(y2) + 1, step):
+        y_end = round(y2) - 1 if (dy < dx) else (round(y2) + 1)
+
+        for y_cur in range(round(y1), y_end, step):
             d1 = x1 - floor(x1)
             d2 = 1 - d1
 
@@ -203,7 +200,9 @@ def wu(p1, p2, color, step_count = False):
             step *= -1
             m1 *= -1
 
-        for x_cur in range(round(x1), round(x2) + 1, step):
+        x_end = round(x2) - 1 if (dy > dx) else (round(x2) + 1)
+
+        for x_cur in range(round(x1), x_end, step):
             d1 = y1 - floor(y1)
             d2 = 1 - d1
 
@@ -245,7 +244,7 @@ def cda_method(p1, p2, color, step_count = False):
     y2 = p2[1]
 
     if (x2 - x1 == 0) and (y2 - y1 == 0):
-        return [x1, y1, color]
+        return [[x1, y1, color]]
 
     dx = x2 - x1
     dy = y2 - y1
@@ -267,7 +266,7 @@ def cda_method(p1, p2, color, step_count = False):
 
     steps = 0
 
-    while (i < l - 2):
+    while (i < l):
 
         x += dx
         y += dy
@@ -277,7 +276,6 @@ def cda_method(p1, p2, color, step_count = False):
         dots.append(dot)
 
         if step_count:
-            #if ((round(x_buf) != round(x)) and (round(y_buf) != round(y))):
             if not((round(x + dx) == round(x) and 
                         round(y + dy) != round(y)) or 
                         (round(x + dx) != round(x) and 
@@ -296,7 +294,6 @@ def draw_line(dots):
 
     for dot in dots:
         canvas_win.create_line(dot[0], dot[1], dot[0] + 1, dot[1], fill = dot[2].hex)
-        #canvas_win.create_oval(dot[0] - POINT_RAD, dot[1] - POINT_RAD, dot[0] + POINT_RAD, dot[1] + POINT_RAD, outline = dot[2].hex, fill = dot[2].hex)
 
 
 def sign(difference):
@@ -315,7 +312,7 @@ def bresenham_float(p1, p2, color, step_count = False):
     y2 = p2[1]
 
     if (x2 - x1 == 0) and (y2 - y1 == 0):
-        return [x1, y1, color]
+        return [[x1, y1, color]]
 
     x = x1
     y = y1
@@ -335,19 +332,14 @@ def bresenham_float(p1, p2, color, step_count = False):
         swaped = 0
 
     m = dy / dx
-    e = m - 0.5 # 0.5?
-    #m = dy / dx ???
-
+    e = m - 0.5
     i = 1
 
     dots = []
 
     steps = 0
 
-    if (step_count):
-        dx += 2
-
-    while (i <= dx - 1):
+    while (i <= dx + 1):
         dot = [x, y, color]
         dots.append(dot)
 
@@ -370,7 +362,6 @@ def bresenham_float(p1, p2, color, step_count = False):
         e = e + m
 
         if step_count:
-            #if ((round(x_buf) != round(x)) and (round(y_buf) != round(y))):
             if not((x_buf == x and y_buf != y) or
                     (x_buf != x and y_buf == y)):
                 steps += 1
@@ -390,7 +381,7 @@ def bresenham_int(p1, p2, color, step_count = False):
     y2 = p2[1]
 
     if (x2 - x1 == 0) and (y2 - y1 == 0):
-        return [x1, y1, color]
+        return [[x1, y1, color]]
 
     x = x1
     y = y1
@@ -409,8 +400,7 @@ def bresenham_int(p1, p2, color, step_count = False):
     else:
         swaped = 0
 
-    e = 2 * dy - dx # 0.5?
-    #m = dy / dx ???
+    e = 2 * dy - dx
 
     i = 1
 
@@ -418,7 +408,7 @@ def bresenham_int(p1, p2, color, step_count = False):
 
     steps = 0
 
-    while (i <= dx - 1):
+    while (i <= dx + 1):
         dot = [x, y, color]
         dots.append(dot)
 
@@ -463,7 +453,7 @@ def bresenham_smooth(p1, p2, color, step_count = False):
     y2 = p2[1]
 
     if (x2 - x1 == 0) and (y2 - y1 == 0):
-        return [x1, y1, color]
+        return [[x1, y1, color]]
 
     x = x1
     y = y1
@@ -496,7 +486,7 @@ def bresenham_smooth(p1, p2, color, step_count = False):
 
     steps = 0
 
-    while (i <= dx - 2):
+    while (i <= dx):
         x_buf = x
         y_buf = y
         
@@ -517,7 +507,6 @@ def bresenham_smooth(p1, p2, color, step_count = False):
         dots.append(dot)
 
         if step_count:
-            #if ((round(x_buf) != round(x)) and (round(y_buf) != round(y))):
             if not((x_buf == x and y_buf != y) or
                     (x_buf != x and y_buf == y)):
                 steps += 1
@@ -535,7 +524,7 @@ def time_measure():
     time_mes = []
 
     try:
-        line_len = float(len_line.get()) # float?
+        line_len = float(len_line.get())
         angle_spin = float(angle.get())
     except:
         messagebox.showerror("Ошибка", "Неверно введены координаты")
@@ -581,13 +570,13 @@ def time_measure():
         time_mes.append(res_time / 20)
 
 
-    plt.figure(figsize = (12, 6))
+    plt.figure(figsize = (14, 6))
 
     plt.title("Замеры времени для различных методов")
 
     positions = np.arange(6)
 
-    methods = ["Брезенхем (float)", "ЦДА", "Брезенхем (int)", "Ву", "Брезенхем (сглаживание)", "Библиотечная"]
+    methods = ["ЦДА", "Брезенхем (float)", "Брезенхем (int)", "Ву", "Брезенхем (сглаживание)", "Библиотечная"]
 
     plt.xticks(positions, methods)
     plt.ylabel("Время")
@@ -602,7 +591,7 @@ def time_measure():
 def steps_measure():
 
     try:
-        line_len = float(len_line.get()) # float?
+        line_len = float(len_line.get())
     except:
         messagebox.showerror("Ошибка", "Неверно введены координаты")
         return
@@ -688,7 +677,7 @@ if __name__ == "__main__":
     option = IntVar()
     option.set(1)
 
-    method_cda = Radiobutton(text = "ЦДА", font="-family {Consolas} -size 14", variable = option, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    method_cda = Radiobutton(text = "ЦДА", font="-family {Consolas} -size 14", variable = option, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
     method_cda.place(x = CV_WIDE + 400, y = 70)
 
     method_wu = Radiobutton(text = "Ву", font="-family {Consolas} -size 14", variable = option, value = 4, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
@@ -698,11 +687,10 @@ if __name__ == "__main__":
     method_lib.place(x = CV_WIDE + 400, y = 140)
 
     
-
-    method_bresenhem_float = Radiobutton(text = "Брезенхем (float)", font="-family {Consolas} -size 14", variable = option, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    method_bresenhem_float = Radiobutton(text = "Брезенхем (float)", font="-family {Consolas} -size 14", variable = option, value = 3, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
     method_bresenhem_float.place(x = CV_WIDE + 25, y = 70)
 
-    method_bresenhem_int = Radiobutton(text = "Брезенхем (int)", font="-family {Consolas} -size 14", variable = option, value = 3, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
+    method_bresenhem_int = Radiobutton(text = "Брезенхем (int)", font="-family {Consolas} -size 14", variable = option, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
     method_bresenhem_int.place(x = CV_WIDE + 25, y = 105)
 
     method_bresenhem_smooth = Radiobutton(text = "Брезенхем (сглаживание)", font="-family {Consolas} -size 14", variable = option, value = 5, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR)
