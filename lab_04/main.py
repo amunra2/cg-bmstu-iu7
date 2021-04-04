@@ -4,10 +4,10 @@ from math import sqrt, acos, degrees, pi, sin, cos, radians, floor, fabs
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
-
 import time
-
 import colorutils as cu
+
+from bresenham_method import bresenham_circle, bresenham_ellipse
 
 
 WIN_WIDTH = 1600
@@ -51,99 +51,103 @@ def parse_color(option_color):
     return color
 
 
-def parse_spektr(option, option_color):
+def parse_spektr(option, option_color, option_figure):
     try:
-        line_len = float(len_line.get())
-        angle_spin = float(angle.get())
+        rad_step = float(rad_step_entry.get())
+        amount = int(amount_entry.get())
+
+        if (option_figure == 1):
+            r_a = int(rad_circle_entry.get())
+            r_b = r_a
+        else:
+            r_a = int(rad_a_ellips_entry.get())
+            r_b = int(rad_b_ellips_entry.get())
     except:
         messagebox.showerror("Ошибка", "Неверно введены координаты")
         return
 
-    if (line_len <= 0):
-        messagebox.showerror("Ошибка", "Длина линии должна быть выше нуля")
+    if (rad_step <= 0):
+        messagebox.showerror("Ошибка", "Шаг радиуса должен быть выше нуля")
         return
 
-    if (angle_spin <= 0):
-        messagebox.showerror("Ошибка", "Угол должен быть больше нуля")
+    if (amount <= 0):
+        messagebox.showerror("Ошибка", "Количество должно быть больше нуля")
         return
 
+    dot_c = [CV_WIDE // 2, CV_HEIGHT // 2]
 
-    p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
+    index = 0
 
-    spin = 0
+    while (index < amount):
+        rad = [r_a, r_b]
 
-    while (spin <= 2 * pi):
-        x2 = CV_WIDE // 2 + cos(spin) * line_len
-        y2 = CV_HEIGHT // 2 + sin(spin) * line_len
+        parse_methods(dot_c, rad, option, option_color, option_figure)
 
-        p2 = [x2, y2]
+        r_a += rad_step
+        r_b += rad_step
+        
+        index += 1
 
-        parse_methods(p1, p2, option, option_color)
 
-        spin += radians(angle_spin)
-    
-
-def parse_line(option, option_color):
+def parse_figure(option, option_color, option_figure):
     try:
-        x1 = int(x1_line.get())
-        y1 = int(y1_line.get())
-        x2 = int(x2_line.get())
-        y2 = int(y2_line.get())
+        x_c = float(xc_fig_entry.get())
+        y_c = int(yc_fig_entry.get())
+
+        if (option_figure == 1):
+            r_a = int(rad_circle_entry.get())
+            r_b = r_a
+        else:
+            r_a = int(rad_a_ellips_entry.get())
+            r_b = int(rad_b_ellips_entry.get())
     except:
         messagebox.showerror("Ошибка", "Неверно введены координаты")
         return
 
-    p1 = [x1, y1]
-    p2 = [x2, y2]
+    dot_c = [x_c, y_c]
+    rad = [r_a, r_b]
 
-    parse_methods(p1, p2, option, option_color)
+    parse_methods(dot_c, rad, option, option_color, option_figure)
 
 
-def parse_methods(p1, p2, option, option_color, draw = True):
+
+def parse_methods(dot_c, rad, option, option_color, option_figure, draw = True):
 
     print("Method = ", option)
 
     color = parse_color(option_color)
 
-    if (option == 1):
-        dots = cda_method(p1, p2, color)
+    if (option == 1): # kanon
+        check_option(option)
+        
+        # if draw:
+        #     draw_line(dots)
+
+    elif (option == 2): # param
+        check_option(option)
+
+        # if draw:
+        #     draw_line(dots)
+
+    elif (option == 3): # bres
+        if (option_figure == 1):
+            dots = bresenham_circle(dot_c, rad[0], color)
+        elif (option_figure == 2):
+            dots = bresenham_ellipse(dot_c, rad, color)
         
         if draw:
             draw_line(dots)
 
-    elif (option == 2):
-        dots = bresenham_int(p1, p2, color)
-
-        if draw:
-            draw_line(dots)
-
-    elif (option == 3):
-        dots = bresenham_float(p1, p2, color)
+    elif (option == 4): # mid point
+        check_option(option)
         
-        if draw:
-            draw_line(dots)
-
-    elif (option == 4):
-        dots = wu(p1, p2, color)
-        
-        if draw:
-            draw_line(dots)
+        # if draw:
+        #     draw_line(dots)
 
     elif (option == 5):
-        dots = bresenham_smooth(p1, p2, color)
-        
-        if draw:
-            draw_line(dots)
-
-    elif (option == 6):
-        lib_method(p1, p2, color)
+        lib_method(dot_c, rad, color)
     else:
         messagebox.showerror("Ошибка", "Неизвестный алгоритм")
-
-
-
-
-
 
 
 def clear_canvas():
@@ -151,8 +155,8 @@ def clear_canvas():
 
 
 
-def lib_method(p1, p2, color):
-    canvas_win.create_line(p1[0], p1[1], p2[0], p2[1], fill = color.hex)
+def lib_method(dot_c, rad, color):
+    canvas_win.create_oval(dot_c[0] - rad[0], dot_c[1] - rad[1], dot_c[0] + rad[0], dot_c[1] + rad[1], outline = color.hex) 
     
 
         
@@ -172,26 +176,18 @@ def sign(difference):
         return 1
 
 
-
-
-
-
-
-
-
 def choose_color(color, intens):
     return color + (intens, intens, intens)
-
 
 
 def change_figure(opt_figure):
 
     if (opt_figure == 1):
-        rad_a_elips_text.place_forget()
-        rad_a_elips_entry.place_forget()
+        rad_a_ellips_text.place_forget()
+        rad_a_ellips_entry.place_forget()
 
-        rad_b_elips_text.place_forget()
-        rad_b_elips_entry.place_forget()
+        rad_b_ellips_text.place_forget()
+        rad_b_ellips_entry.place_forget()
 
         rad_circle_text.place(x = CV_WIDE + 250, y = 445)
 
@@ -201,13 +197,13 @@ def change_figure(opt_figure):
         rad_circle_text.place_forget()
         rad_circle_entry.place_forget()
 
-        rad_a_elips_text.place(x = CV_WIDE + 70, y = 445)
+        rad_a_ellips_text.place(x = CV_WIDE + 100, y = 445)
 
-        rad_a_elips_entry.place(x = CV_WIDE + 130, y = 445)
+        rad_a_ellips_entry.place(x = CV_WIDE + 160, y = 445)
 
-        rad_b_elips_text.place(x = CV_WIDE + 430, y = 445)
+        rad_b_ellips_text.place(x = CV_WIDE + 400, y = 445)
 
-        rad_b_elips_entry.place(x = CV_WIDE + 490, y = 445)
+        rad_b_ellips_entry.place(x = CV_WIDE + 460, y = 445)
 
 
 
@@ -278,64 +274,6 @@ def time_measure():
     plt.show()
 
     print(time_mes)
-
-
-def steps_measure():
-
-    try:
-        line_len = float(len_line.get())
-    except:
-        messagebox.showerror("Ошибка", "Неверно введены координаты")
-        return
-
-    if (line_len <= 0):
-        messagebox.showerror("Ошибка", "Длина линии должна быть выше нуля")
-        return
-
-    p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
-
-    spin = 0
-
-    angle_spin = [i for i in range(0, 91, 2)]
-
-    cda_steps = []
-    wu_steps = []
-    bres_int_steps = []
-    bres_float_steps = []
-    bres_smooth_steps = []
-
-    while (spin <= pi / 2 + 0.01):
-        x2 = CV_WIDE // 2 + cos(spin) * line_len
-        y2 = CV_HEIGHT // 2 + sin(spin) * line_len
-
-        p2 = [x2, y2]
-        
-        cda_steps.append(cda_method(p1, p2, (255, 255, 255), step_count = True))
-        wu_steps.append(wu(p1, p2, (255, 255, 255), step_count = True))
-        bres_int_steps.append(bresenham_int(p1, p2, (255, 255, 255), step_count = True))
-        bres_float_steps.append(bresenham_float(p1, p2, (255, 255, 255), step_count = True))
-        bres_smooth_steps.append(bresenham_smooth(p1, p2, (255, 255, 255), step_count = True))
-
-        spin += radians(2)
-
-
-    plt.figure(figsize = (15, 6))
-
-    plt.title("Замеры ступенчатости для различных методов\n{0} - длина отрезка".format(line_len))
-
-    plt.xlabel("Угол (в градусах)")
-    plt.ylabel("Количество ступенек")
-
-    plt.plot(angle_spin, cda_steps, label = "ЦДА")
-    plt.plot(angle_spin, wu_steps, label = "Ву")
-    plt.plot(angle_spin, bres_float_steps, "-.", label = "Брезенхем (float/int)")
-    plt.plot(angle_spin, bres_smooth_steps, ":", label = "Брезенхем\n(сглаживание)")
-
-    plt.xticks(np.arange(91, step = 5))
-
-    plt.legend()
-
-    plt.show()
 
 
 
@@ -426,8 +364,8 @@ if __name__ == "__main__":
     figure_circle = Radiobutton(text = "Окружность", font="-family {Consolas} -size 14", variable = option_figure, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda: change_figure(option_figure.get()))
     figure_circle.place(x = CV_WIDE + 25, y = 315)
 
-    figure_elips = Radiobutton(text = "Элипс", font="-family {Consolas} -size 14", variable = option_figure, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda: change_figure(option_figure.get()))
-    figure_elips.place(x = CV_WIDE + 400, y = 315)
+    figure_ellips = Radiobutton(text = "Эллипс", font="-family {Consolas} -size 14", variable = option_figure, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda: change_figure(option_figure.get()))
+    figure_ellips.place(x = CV_WIDE + 400, y = 315)
 
 
     # Line
@@ -458,18 +396,18 @@ if __name__ == "__main__":
     rad_circle_entry = Entry(font="-family {Consolas} -size 14", width = 9)
 
 
-    rad_a_elips_text = Label(text = "R_a: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_a_ellips_text = Label(text = "R_a: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
     
-    rad_a_elips_entry = Entry(font="-family {Consolas} -size 14", width = 9)
+    rad_a_ellips_entry = Entry(font="-family {Consolas} -size 14", width = 9)
     
-    rad_b_elips_text = Label(text = "R_b: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_b_ellips_text = Label(text = "R_b: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
     
-    rad_b_elips_entry = Entry(font="-family {Consolas} -size 14", width = 9)
+    rad_b_ellips_entry = Entry(font="-family {Consolas} -size 14", width = 9)
     
     change_figure(1) # set circle
 
 
-    draw_circle_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_line(option.get(), option_color.get()), width = 20, bg = BTN_TEXT_COLOR)
+    draw_circle_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_figure(option.get(), option_color.get(), option_figure.get()), width = 20, bg = BTN_TEXT_COLOR)
     draw_circle_btn.place(x = CV_WIDE + 210, y = 490)
 
 
@@ -494,7 +432,7 @@ if __name__ == "__main__":
     amount_entry = Entry(font="-family {Consolas} -size 14", width = 9)
     amount_entry.place(x = CV_WIDE + 480, y = 590)
 
-    draw_spektr_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_spektr(option.get(), option_color.get()), width = 20, bg = BTN_TEXT_COLOR)
+    draw_spektr_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_spektr(option.get(), option_color.get(), option_figure.get()), width = 20, bg = BTN_TEXT_COLOR)
     draw_spektr_btn.place(x = CV_WIDE + 210, y = 640)
 
 
@@ -509,5 +447,15 @@ if __name__ == "__main__":
 
     # Insert # TODO
 
+    xc_fig_entry.insert(END, "450")
+    yc_fig_entry.insert(END, "450")
+
+    rad_a_ellips_entry.insert(END, "10")
+    rad_b_ellips_entry.insert(END, "50")
+
+    rad_circle_entry.insert(END, "30")
+
+    amount_entry.insert(END, "50")
+    rad_step_entry.insert(END, "5")
 
     win.mainloop()
