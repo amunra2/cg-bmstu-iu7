@@ -8,6 +8,9 @@ import time
 import colorutils as cu
 
 from bresenham_method import bresenham_circle, bresenham_ellipse
+from mid_dot_method import mid_dot_circle, mid_dot_ellipse
+from canon_method import canon_circle, canon_ellips
+
 
 
 WIN_WIDTH = 1600
@@ -117,11 +120,14 @@ def parse_methods(dot_c, rad, option, option_color, option_figure, draw = True):
 
     color = parse_color(option_color)
 
-    if (option == 1): # kanon
-        check_option(option)
+    if (option == 1): # canon
+        if (option_figure == 1):
+            dots = canon_circle(dot_c, rad[0], color)
+        elif (option_figure == 2):
+            dots = canon_ellips(dot_c, rad, color)
         
-        # if draw:
-        #     draw_line(dots)
+        if draw:
+            draw_line(dots)
 
     elif (option == 2): # param
         check_option(option)
@@ -139,10 +145,13 @@ def parse_methods(dot_c, rad, option, option_color, option_figure, draw = True):
             draw_line(dots)
 
     elif (option == 4): # mid point
-        check_option(option)
+        if (option_figure == 1):
+            dots = mid_dot_circle(dot_c, rad[0], color)
+        elif (option_figure == 2):
+            dots = mid_dot_ellipse(dot_c, rad, color)
         
-        # if draw:
-        #     draw_line(dots)
+        if draw:
+            draw_line(dots)
 
     elif (option == 5):
         lib_method(dot_c, rad, color)

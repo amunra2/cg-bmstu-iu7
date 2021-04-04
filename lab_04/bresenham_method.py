@@ -5,7 +5,7 @@
 from math import sqrt
 
 
-def add_dots_bres_circle(dots, dot_c, dot_dif, color):
+def add_dots_circle(dots, dot_c, dot_dif, color):
     x_c = dot_c[0]
     y_c = dot_c[1]
 
@@ -37,9 +37,9 @@ def bresenham_circle(dot_c, radius, color):
 
     eps = 0
 
-    while (x < y + 1):
+    while (x < y):
 
-        add_dots_bres_circle(dots, [x_c, y_c], [x, y], color)
+        add_dots_circle(dots, [x_c, y_c], [x, y], color)
 
         if (delta_i < 0):
             eps = 2 * delta_i + 2 * y - 1
@@ -72,7 +72,7 @@ def bresenham_circle(dot_c, radius, color):
     return dots
 
 
-def add_dots_bres_ellipse(dots, dot_c, dot_dif, color):
+def add_dots_ellipse(dots, dot_c, dot_dif, color):
     x_c = dot_c[0]
     y_c = dot_c[1]
 
@@ -96,7 +96,7 @@ def bresenham_ellipse(dot_c, rad, color):
     r_a_2 = rad[0] * rad[0]
     r_b_2 = rad[1] * rad[1]
 
-    #delta_i = r_a + r_b - r_a * (2 * y)
+    #delta_i = r_a_2 + r_b_2 - r_a_2 * (2 * y)
     delta_i = r_b_2 - r_a_2 * (2 * y + 1)
 
     dots = []
@@ -105,9 +105,9 @@ def bresenham_ellipse(dot_c, rad, color):
 
     while (y >= 0):
 
-        add_dots_bres_ellipse(dots, [x_c, y_c], [x, y], color)
+        add_dots_ellipse(dots, [x_c, y_c], [x, y], color)
 
-        if (delta_i < 0):
+        if (delta_i <= 0):
             eps = 2 * delta_i + (2 * y + 2) * r_a_2
 
             if (eps < 0):
