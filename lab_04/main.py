@@ -10,6 +10,7 @@ import colorutils as cu
 from bresenham_method import bresenham_circle, bresenham_ellipse
 from mid_dot_method import mid_dot_circle, mid_dot_ellipse
 from canon_method import canon_circle, canon_ellips
+from parametric_method import parametric_circle, parametric_ellips
 
 
 
@@ -130,10 +131,13 @@ def parse_methods(dot_c, rad, option, option_color, option_figure, draw = True):
             draw_line(dots)
 
     elif (option == 2): # param
-        check_option(option)
-
-        # if draw:
-        #     draw_line(dots)
+        if (option_figure == 1):
+            dots = parametric_circle(dot_c, rad[0], color)
+        elif (option_figure == 2):
+            dots = parametric_ellips(dot_c, rad, color)
+        
+        if draw:
+            draw_line(dots)
 
     elif (option == 3): # bres
         if (option_figure == 1):
