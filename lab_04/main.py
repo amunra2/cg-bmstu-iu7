@@ -1,7 +1,6 @@
 from tkinter import Tk, Button, Label, Entry, END, Listbox, Canvas, Radiobutton, LEFT, RIGHT, IntVar
 from tkinter import messagebox
 from math import sqrt, acos, degrees, pi, sin, cos, radians, floor, fabs
-import copy
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -27,6 +26,9 @@ BTN_TEXT_COLOR = "#4d94ff"
 BOX_COLOR = "#8080ff"
 BOX_WIDTH = 50
 
+NUMBER_OF_RUNS = 20
+MAX_RADIUS = 10000
+STEP = 1000
 
 
 
@@ -34,12 +36,10 @@ def check_option(option):
     messagebox.showinfo("Выбран", "Выбрана опция %d" %(option))
 
 
-
 # Methods
-
 def parse_color(option_color):
 
-    print("Color = ", option_color)
+    #print("Color = ", option_color)
 
     color = cu.Color((0, 0, 0)) # "black"
 
@@ -117,8 +117,6 @@ def parse_figure(option, option_color, option_figure):
 
 def parse_methods(dot_c, rad, option, option_color, option_figure, draw = True):
 
-    print("Method = ", option)
-
     color = parse_color(option_color)
 
     if (option == 1): # canon
@@ -167,12 +165,9 @@ def clear_canvas():
     canvas_win.delete("all")
 
 
-
 def lib_method(dot_c, rad, color):
     canvas_win.create_oval(dot_c[0] - rad[0], dot_c[1] - rad[1], dot_c[0] + rad[0], dot_c[1] + rad[1], outline = color.hex) 
     
-
-        
 
 def draw_line(dots):
 
@@ -180,21 +175,7 @@ def draw_line(dots):
         canvas_win.create_line(dot[0], dot[1], dot[0] + 1, dot[1], fill = dot[2].hex)
 
 
-def sign(difference):
-    if (difference < 0):
-        return -1
-    elif (difference == 0):
-        return 0
-    else:
-        return 1
-
-
-def choose_color(color, intens):
-    return color + (intens, intens, intens)
-
-
 def change_figure(opt_figure):
-
     if (opt_figure == 1):
         rad_a_ellips_text.place_forget()
         rad_a_ellips_entry.place_forget()
@@ -219,78 +200,74 @@ def change_figure(opt_figure):
         rad_b_ellips_entry.place(x = CV_WIDE + 460, y = 445)
 
 
-
-def time_measure():
+def time_measure(option_figure):
 
     time_mes = []
 
-    try:
-        line_len = float(len_line.get())
-        angle_spin = float(angle.get())
-    except:
-        messagebox.showerror("Ошибка", "Неверно введены координаты")
-        return
+    if (option_figure == 1):
+        r_a = STEP
+        r_b = r_a
+        name = "окружность"
+    else:
+        r_a = STEP
+        r_b = STEP
+        name = "эллипс"
 
-    if (line_len <= 0):
-        messagebox.showerror("Ошибка", "Длина линии должна быть выше нуля")
-        return
+    dot_c = [CV_WIDE // 2, CV_HEIGHT // 2]
 
-    if (angle_spin <= 0):
-        messagebox.showerror("Ошибка", "Угол должен быть больше нуля")
-        return
+    for i in range(1, 6):
 
+        time_start = [0] * (MAX_RADIUS // STEP)
+        time_end = [0] * (MAX_RADIUS // STEP)
 
-    for i in range(1, 7):
-        res_time = 0
+        for _ in range(NUMBER_OF_RUNS):
 
-        for _ in range(20):
-            time_start = 0
-            time_end = 0
+            r_a = STEP
+            r_b = STEP
 
-            p1 = [CV_WIDE // 2, CV_HEIGHT // 2]
-
-            spin = 0
-
-            while (spin <= 2 * pi):
-                x2 = CV_WIDE // 2 + cos(spin) * line_len
-                y2 = CV_HEIGHT // 2 + sin(spin) * line_len
-
-                p2 = [x2, y2]
+            for k in range(MAX_RADIUS // STEP):
+                rad = [r_a, r_b]
                 
-                time_start += time.time()
-                parse_methods(p1, p2, i, 4, draw = False)
-                time_end += time.time()
+                time_start[k] += time.time()
 
-                spin += radians(angle_spin)
+                parse_methods(dot_c, rad, i, 4, option_figure, draw = False)
 
-            res_time += (time_end - time_start)
+                time_end[k] += time.time()
 
-            clear_canvas()
+                r_a += STEP
+                r_b += STEP
 
+        size = len(time_start)
 
-        time_mes.append(res_time / 20)
+        res_time = list((time_end[j] - time_start[j]) / NUMBER_OF_RUNS for j in range(size))
 
+        time_mes.append(res_time)
 
+        # clear_canvas()
+
+    rad_arr = list(i for i in range(STEP, MAX_RADIUS + STEP, STEP))
     plt.figure(figsize = (14, 6))
 
-    plt.title("Замеры времени для различных методов")
+    plt.title("Замеры времени для различных методов\nФигура: " + name)
 
-    positions = np.arange(6)
 
-    methods = ["ЦДА", "Брезенхем (float)", "Брезенхем (int)", "Ву", "Брезенхем (сглаживание)", "Библиотечная"]
+    plt.plot(rad_arr, time_mes[0], label = "Каноническое\nуравнеие")
 
-    plt.xticks(positions, methods)
+    plt.plot(rad_arr, time_mes[1], label = "Параметрическое\nуравнение")
+
+    plt.plot(rad_arr, time_mes[2], label = "Брезенхем")
+
+    plt.plot(rad_arr, time_mes[3], label = "Алгоритм\nсредней точки")
+
+    plt.plot(rad_arr, time_mes[4], label = "Библиотечная")
+
+    plt.xticks(np.arange(STEP, MAX_RADIUS, STEP))
+    plt.legend()
+
     plt.ylabel("Время")
-    #time_mes[1] = 0.75 * time_mes[4]
-    plt.bar(positions, time_mes, align = "center", alpha = 1)
+    plt.xlabel("Величина радиуса")
 
     plt.show()
-
-    print(time_mes)
-
-
-
-
 
 
 
@@ -308,9 +285,7 @@ if __name__ == "__main__":
     canvas_win = Canvas(win, width = CV_WIDE, height = CV_HEIGHT, bg = CV_COLOR)
     canvas_win.place(x = 0, y = 0)
 
-
     # Method
-
     back_box_method = Label(text = "", font="-family {Consolas} -size 16", width = BOX_WIDTH, height = 5, bg = BOX_COLOR)
     back_box_method.place(x = CV_WIDE + 20, y = 20)
 
@@ -451,7 +426,7 @@ if __name__ == "__main__":
 
     # Control buttons
 
-    compare_time_btn = Button(win, text = "Сравнить время", font="-family {Consolas} -size 15", command = lambda: time_measure(), width = 20, height = 2,  bg = BTN_TEXT_COLOR)
+    compare_time_btn = Button(win, text = "Сравнить время", font="-family {Consolas} -size 15", command = lambda: time_measure(option_figure.get()), width = 20, height = 2,  bg = BTN_TEXT_COLOR)
     compare_time_btn.place(x = CV_WIDE + 30, y = 770)
 
 
