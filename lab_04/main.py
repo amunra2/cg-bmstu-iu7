@@ -1,4 +1,4 @@
-from tkinter import Tk, Button, Label, Entry, END, Listbox, Canvas, Radiobutton, LEFT, RIGHT, IntVar
+from tkinter import Tk, Button, Label, Entry, END, Listbox, Canvas, Radiobutton, LEFT, RIGHT, IntVar, DISABLED, NORMAL
 from tkinter import messagebox
 from math import sqrt, acos, degrees, pi, sin, cos, radians, floor, fabs
 import numpy as np
@@ -55,17 +55,13 @@ def parse_color(option_color):
     return color
 
 
-def parse_spektr(option, option_color, option_figure):
+def parse_spektr_ellips(option, option_color, option_figure):
     try:
-        rad_step = float(rad_step_entry.get())
-        amount = int(amount_entry.get())
+        rad_step = float(rad_step_elps_entry.get())
+        amount = int(amount_elps_entry.get())
 
-        if (option_figure == 1):
-            r_a = int(rad_circle_entry.get())
-            r_b = r_a
-        else:
-            r_a = int(rad_a_ellips_entry.get())
-            r_b = int(rad_b_ellips_entry.get())
+        r_a = float(rad_a_elps_entry.get())
+        r_b = float(rad_b_elps_entry.get())
     except:
         messagebox.showerror("Ошибка", "Неверно введены координаты")
         return
@@ -77,6 +73,60 @@ def parse_spektr(option, option_color, option_figure):
     if (amount <= 0):
         messagebox.showerror("Ошибка", "Количество должно быть больше нуля")
         return
+
+    dot_c = [CV_WIDE // 2, CV_HEIGHT // 2]
+
+    index = 0
+
+    while (index < amount):
+        rad = [r_a, r_b]
+
+        parse_methods(dot_c, rad, option, option_color, option_figure)
+
+        r_a += rad_step
+        r_b += rad_step
+        
+        index += 1
+
+    
+def parse_spektr_circle(option, option_color, option_figure, option_spektr_crcl):
+    try:
+        rad_step = float(rad_step_crcl_entry.get())
+        amount = int(amount_crcl_entry.get())
+
+        rad_begin = float(rad_begin_crcl_entry.get())
+        rad_end = float(rad_end_crcl_entry.get())
+    except:
+        messagebox.showerror("Ошибка", "Неверно введены координаты")
+        return
+
+    # Choose combination
+
+    if (option_spektr_crcl == 1):
+        rad_step = int((rad_end - rad_begin) / amount)
+    elif (option_spektr_crcl == 2):
+        amount = int((rad_end - rad_begin) / rad_step)
+    elif (option_spektr_crcl == 3):
+        rad_begin = float(rad_end - rad_step * amount)
+    elif (option_spektr_crcl == 4):
+        rad_end = float(rad_begin + rad_step * amount)
+
+    if (rad_begin > rad_end):
+        messagebox.showerror("Ошибка", "Начальный радиус не может быть больше конечного")
+        return
+
+    if (rad_step <= 0):
+        messagebox.showerror("Ошибка", "Шаг радиуса должен быть выше нуля")
+        return
+
+    if (amount <= 0):
+        messagebox.showerror("Ошибка", "Количество должно быть больше нуля")
+        return
+
+
+
+    r_a = rad_begin
+    r_b = rad_begin
 
     dot_c = [CV_WIDE // 2, CV_HEIGHT // 2]
 
@@ -114,6 +164,13 @@ def parse_figure(option, option_color, option_figure):
     parse_methods(dot_c, rad, option, option_color, option_figure)
 
 
+def choose_spektr(option, option_color, option_figure, option_spektr_crcl):
+    if (option_figure == 1):
+        parse_spektr_circle(option, option_color, option_figure, option_spektr_crcl)
+    elif (option_figure == 2):
+        parse_spektr_ellips(option, option_color, option_figure)
+
+
 
 def parse_methods(dot_c, rad, option, option_color, option_figure, draw = True):
 
@@ -121,39 +178,29 @@ def parse_methods(dot_c, rad, option, option_color, option_figure, draw = True):
 
     if (option == 1): # canon
         if (option_figure == 1):
-            dots = canon_circle(dot_c, rad[0], color)
+            canon_circle(canvas_win, dot_c, rad[0], color, draw)
         elif (option_figure == 2):
-            dots = canon_ellips(dot_c, rad, color)
-        
-        if draw:
-            draw_line(dots)
+            canon_ellips(canvas_win, dot_c, rad, color, draw)
 
     elif (option == 2): # param
         if (option_figure == 1):
-            dots = parametric_circle(dot_c, rad[0], color)
+            parametric_circle(canvas_win, dot_c, rad[0], color, draw)
         elif (option_figure == 2):
-            dots = parametric_ellips(dot_c, rad, color)
-        
-        if draw:
-            draw_line(dots)
+            parametric_ellips(canvas_win, dot_c, rad, color, draw)
 
     elif (option == 3): # bres
         if (option_figure == 1):
-            dots = bresenham_circle(dot_c, rad[0], color)
+            bresenham_circle(canvas_win, dot_c, rad[0], color, draw)
         elif (option_figure == 2):
-            dots = bresenham_ellipse(dot_c, rad, color)
+            bresenham_ellipse(canvas_win, dot_c, rad, color, draw)
         
-        if draw:
-            draw_line(dots)
 
     elif (option == 4): # mid point
         if (option_figure == 1):
-            dots = mid_dot_circle(dot_c, rad[0], color)
+            mid_dot_circle(canvas_win, dot_c, rad[0], color, draw)
         elif (option_figure == 2):
-            dots = mid_dot_ellipse(dot_c, rad, color)
+            mid_dot_ellipse(canvas_win, dot_c, rad, color, draw)
         
-        if draw:
-            draw_line(dots)
 
     elif (option == 5):
         lib_method(dot_c, rad, color)
@@ -169,11 +216,6 @@ def lib_method(dot_c, rad, color):
     canvas_win.create_oval(dot_c[0] - rad[0], dot_c[1] - rad[1], dot_c[0] + rad[0], dot_c[1] + rad[1], outline = color.hex) 
     
 
-def draw_line(dots):
-
-    for dot in dots:
-        canvas_win.create_line(dot[0], dot[1], dot[0] + 1, dot[1], fill = dot[2].hex)
-
 
 def change_figure(opt_figure):
     if (opt_figure == 1):
@@ -187,6 +229,53 @@ def change_figure(opt_figure):
 
         rad_circle_entry.place(x = CV_WIDE + 310, y = 445)
 
+        # Spektr
+
+        #Elps
+
+        rad_step_elps_text.place_forget()
+
+        rad_step_elps_entry.place_forget()
+
+        amount_elps_text.place_forget()
+
+        amount_elps_entry.place_forget()
+
+        rad_a_elps_text.place_forget()
+
+        rad_a_elps_entry.place_forget()
+
+        rad_b_elps_text.place_forget()
+
+        rad_b_elps_entry.place_forget()
+
+        # Circle
+
+        rad_step_crcl_text.place(x = CV_WIDE + 60, y = 590)
+
+        rad_step_crcl_entry.place(x = CV_WIDE + 110, y = 590)
+
+        amount_crcl_text.place(x = CV_WIDE + 190, y = 590)
+        amount_crcl_entry.place(x = CV_WIDE + 220, y = 590)
+
+        rad_begin_crcl_text.place(x = CV_WIDE + 310, y = 590)
+        rad_begin_crcl_entry.place(x = CV_WIDE + 380, y = 590)
+
+        rad_end_crcl_text.place(x = CV_WIDE + 460, y = 590)
+        rad_end_crcl_entry.place(x = CV_WIDE + 530, y = 590)
+
+        # Radio button for hide
+
+        remove_txt.place(x = CV_WIDE + 25, y = 630)
+
+        spektr_crcl_remove_step.place(x = CV_WIDE + 25, y = 660)
+
+        spektr_crcl_remove_amount.place(x = CV_WIDE + 25, y = 685)
+
+        spektr_crcl_remove_rad_begin.place(x = CV_WIDE + 400, y = 660)
+
+        spektr_crcl_remove_rad_end.place(x = CV_WIDE + 400, y = 685)
+
     else:
         rad_circle_text.place_forget()
         rad_circle_entry.place_forget()
@@ -199,6 +288,68 @@ def change_figure(opt_figure):
 
         rad_b_ellips_entry.place(x = CV_WIDE + 460, y = 445)
 
+        # Spektr
+
+        # Elps
+
+        rad_step_elps_text.place(x = CV_WIDE + 70, y = 590)
+
+        rad_step_elps_entry.place(x = CV_WIDE + 130, y = 590)
+
+        amount_elps_text.place(x = CV_WIDE + 340, y = 590)
+
+        amount_elps_entry.place(x = CV_WIDE + 480, y = 590)
+
+        rad_a_elps_text.place(x = CV_WIDE + 100, y = 640)
+
+        rad_a_elps_entry.place(x = CV_WIDE + 160, y = 640)
+
+        rad_b_elps_text.place(x = CV_WIDE + 400, y = 640)
+
+        rad_b_elps_entry.place(x = CV_WIDE + 460, y = 640)
+
+        # Crcl
+
+        rad_step_crcl_text.place_forget()
+
+        rad_step_crcl_entry.place_forget()
+
+        amount_crcl_text.place_forget()
+        amount_crcl_entry.place_forget()
+
+        rad_begin_crcl_text.place_forget()
+        rad_begin_crcl_entry.place_forget()
+
+        rad_end_crcl_text.place_forget()
+        rad_end_crcl_entry.place_forget()
+
+        # Radio button for hide
+
+        remove_txt.place_forget()
+
+        spektr_crcl_remove_step.place_forget()
+
+        spektr_crcl_remove_amount.place_forget()
+
+        spektr_crcl_remove_rad_begin.place_forget()
+
+        spektr_crcl_remove_rad_end.place_forget()
+
+
+def remove_btn_spektr_cicle(option_spektr_crcl):
+    rad_step_crcl_entry.configure(state = NORMAL)
+    amount_crcl_entry.configure(state = NORMAL)
+    rad_begin_crcl_entry.configure(state = NORMAL)
+    rad_end_crcl_entry.configure(state = NORMAL)
+
+    if (option_spektr_crcl == 1):
+        rad_step_crcl_entry.configure(state = DISABLED)
+    elif (option_spektr_crcl == 2):
+        amount_crcl_entry.configure(state = DISABLED)
+    elif (option_spektr_crcl == 3):
+        rad_begin_crcl_entry.configure(state = DISABLED)
+    elif (option_spektr_crcl == 4):
+        rad_end_crcl_entry.configure(state = DISABLED)
 
 def time_measure(option_figure):
 
@@ -215,7 +366,7 @@ def time_measure(option_figure):
 
     dot_c = [CV_WIDE // 2, CV_HEIGHT // 2]
 
-    for i in range(1, 6):
+    for i in range(1, 5):
 
         time_start = [0] * (MAX_RADIUS // STEP)
         time_end = [0] * (MAX_RADIUS // STEP)
@@ -259,7 +410,6 @@ def time_measure(option_figure):
 
     plt.plot(rad_arr, time_mes[3], label = "Алгоритм\nсредней точки")
 
-    plt.plot(rad_arr, time_mes[4], label = "Библиотечная")
 
     plt.xticks(np.arange(STEP, MAX_RADIUS, STEP))
     plt.legend()
@@ -391,8 +541,6 @@ if __name__ == "__main__":
     rad_b_ellips_text = Label(text = "R_b: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
     
     rad_b_ellips_entry = Entry(font="-family {Consolas} -size 14", width = 9)
-    
-    change_figure(1) # set circle
 
 
     draw_circle_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_figure(option.get(), option_color.get(), option_figure.get()), width = 20, bg = BTN_TEXT_COLOR)
@@ -400,7 +548,7 @@ if __name__ == "__main__":
 
 
     # Spektr
-    back_box_spektr = Label(text = "", font="-family {Consolas} -size 16", width = BOX_WIDTH, height = 5, bg = BOX_COLOR)
+    back_box_spektr = Label(text = "", font="-family {Consolas} -size 16", width = BOX_WIDTH, height = 8, bg = BOX_COLOR)
     back_box_spektr.place(x = CV_WIDE + 20, y = 550)
 
     spektr_text = Label(win, text = "Нарисовать спектр", width = BOX_WIDTH, font="-family {Consolas} -size 16", bg = MAIN_TEXT_COLOR)
@@ -408,20 +556,55 @@ if __name__ == "__main__":
 
 
     # Data
-    rad_step_text = Label(text = "Шаг: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
-    rad_step_text.place(x = CV_WIDE + 70, y = 590)
 
-    rad_step_entry = Entry(font="-family {Consolas} -size 14", width = 9)
-    rad_step_entry.place(x = CV_WIDE + 130, y = 590)
+    # Elips
+    rad_step_elps_text = Label(text = "Шаг: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_step_elps_entry = Entry(font="-family {Consolas} -size 14", width = 9)
 
-    amount_text = Label(text = "Количество: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
-    amount_text.place(x = CV_WIDE + 340, y = 590)
+    rad_a_elps_text = Label(text = "R_a: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_a_elps_entry = Entry(font="-family {Consolas} -size 14", width = 9)
 
-    amount_entry = Entry(font="-family {Consolas} -size 14", width = 9)
-    amount_entry.place(x = CV_WIDE + 480, y = 590)
+    rad_b_elps_text = Label(text = "R_b: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_b_elps_entry = Entry(font="-family {Consolas} -size 14", width = 9)
 
-    draw_spektr_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: parse_spektr(option.get(), option_color.get(), option_figure.get()), width = 20, bg = BTN_TEXT_COLOR)
-    draw_spektr_btn.place(x = CV_WIDE + 210, y = 640)
+    amount_elps_text = Label(text = "Количество: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    amount_elps_entry = Entry(font="-family {Consolas} -size 14", width = 9)
+
+    # Circle
+
+    rad_step_crcl_text = Label(text = "Шаг: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_step_crcl_entry = Entry(font="-family {Consolas} -size 14", width = 5)
+
+    amount_crcl_text = Label(text = "N:", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    amount_crcl_entry = Entry(font="-family {Consolas} -size 14", width = 5)
+
+    rad_begin_crcl_text = Label(text = "R нач:", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_begin_crcl_entry = Entry(font="-family {Consolas} -size 14", width = 5)
+
+    rad_end_crcl_text = Label(text = "R кон:", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    rad_end_crcl_entry = Entry(font="-family {Consolas} -size 14", width = 5)
+
+    # Radio button for hide
+
+    remove_txt = Label(text = "Скрыть:", font="-family {Consolas} -size 16", bg = BOX_COLOR)
+    remove_txt.place(x = CV_WIDE + 25, y = 630)
+
+    option_spektr_crcl = IntVar()
+    option_spektr_crcl.set(1)
+
+    spektr_crcl_remove_step = Radiobutton(text = "Шаг", font="-family {Consolas} -size 14", variable = option_spektr_crcl, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda : remove_btn_spektr_cicle(option_spektr_crcl.get()))
+
+    spektr_crcl_remove_amount = Radiobutton(text = "N", font="-family {Consolas} -size 14", variable = option_spektr_crcl, value = 2, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda : remove_btn_spektr_cicle(option_spektr_crcl.get()))
+
+    spektr_crcl_remove_rad_begin = Radiobutton(text = "R нач", font="-family {Consolas} -size 14", variable = option_spektr_crcl, value = 3, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda : remove_btn_spektr_cicle(option_spektr_crcl.get()))
+
+    spektr_crcl_remove_rad_end = Radiobutton(text = "R кон", font="-family {Consolas} -size 14", variable = option_spektr_crcl, value = 4, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda : remove_btn_spektr_cicle(option_spektr_crcl.get()))
+
+
+
+
+    draw_spektr_btn = Button(win, text = "Нарисовать", font="-family {Consolas} -size 14", command = lambda: choose_spektr(option.get(), option_color.get(), option_figure.get(), option_spektr_crcl.get()), width = 20, bg = BTN_TEXT_COLOR)
+    draw_spektr_btn.place(x = CV_WIDE + 210, y = 720)
 
 
     # Control buttons
@@ -443,7 +626,20 @@ if __name__ == "__main__":
 
     rad_circle_entry.insert(END, "30")
 
-    amount_entry.insert(END, "50")
-    rad_step_entry.insert(END, "5")
+    amount_elps_entry.insert(END, "50")
+    rad_step_elps_entry.insert(END, "5")
+
+    rad_begin_crcl_entry.insert(END, "10")
+    rad_end_crcl_entry.insert(END, "90")
+
+    rad_step_crcl_entry.insert(END, "3")
+
+    amount_crcl_entry.insert(END, "50")
+
+    rad_a_elps_entry.insert(END, "10")
+    rad_b_elps_entry.insert(END, "50")
+
+    remove_btn_spektr_cicle(1) # set remove step
+    change_figure(1) # set circle
 
     win.mainloop()

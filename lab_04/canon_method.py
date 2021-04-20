@@ -1,10 +1,11 @@
 from math import sqrt
 
+from draw import draw_pixel, draw_dots_circle, draw_dots_ellipse
 
-from bresenham_method import add_dots_circle, add_dots_ellipse
 
 
-def canon_circle(dot_c, radius, color):
+
+def canon_circle(canvas_win, dot_c, radius, color, draw):
     
     x_c = dot_c[0]
     y_c = dot_c[1]
@@ -15,19 +16,16 @@ def canon_circle(dot_c, radius, color):
 
     x = 0
 
-    dots = []
-
     while (x <= edge):
         y = round(sqrt(double_radius - x * x))
 
-        add_dots_circle(dots, [x_c, y_c], [x, y], color)
+        if draw:
+            draw_dots_circle(canvas_win, [x_c, y_c], [x, y], color)
 
         x += 1
 
-    return dots  
 
-
-def canon_ellips(dot_c, rad, color):
+def canon_ellips(canvas_win, dot_c, rad, color, draw):
     x_c = dot_c[0]
     y_c = dot_c[1]
 
@@ -41,12 +39,11 @@ def canon_ellips(dot_c, rad, color):
 
     x = 0
 
-    dots = []
-
     while (x <= edge):
         y = round(sqrt(1 - x * x / double_ra) * r_b)
 
-        add_dots_ellipse(dots, [x_c, y_c], [x, y], color)
+        if draw:
+            draw_dots_ellipse(canvas_win, [x_c, y_c], [x, y], color)
 
         x += 1
 
@@ -57,9 +54,8 @@ def canon_ellips(dot_c, rad, color):
     while (y <= edge):
         x = round(sqrt(1 - y * y / double_rb) * r_a)
 
-        add_dots_ellipse(dots, [x_c, y_c], [x, y], color)
+        if draw:   
+            draw_dots_ellipse(canvas_win, [x_c, y_c], [x, y], color)
 
         y += 1
-
-    return dots  
     

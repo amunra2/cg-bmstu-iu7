@@ -4,26 +4,10 @@
 
 from math import sqrt
 
-
-def add_dots_circle(dots, dot_c, dot_dif, color):
-    x_c = dot_c[0]
-    y_c = dot_c[1]
-
-    x = dot_dif[0]
-    y = dot_dif[1]
-
-    dots.append([x_c + x, y_c + y, color])
-    dots.append([x_c - x, y_c + y, color])
-    dots.append([x_c + x, y_c - y, color])
-    dots.append([x_c - x, y_c - y, color])
-
-    dots.append([x_c + y, y_c + x, color])
-    dots.append([x_c - y, y_c + x, color])
-    dots.append([x_c + y, y_c - x, color])
-    dots.append([x_c - y, y_c - x, color])
+from draw import draw_dots_circle, draw_dots_ellipse
 
 
-def bresenham_circle(dot_c, radius, color):
+def bresenham_circle(canvas_win, dot_c, radius, color, draw):
 
     x_c = round(dot_c[0])
     y_c = round(dot_c[1])
@@ -33,13 +17,12 @@ def bresenham_circle(dot_c, radius, color):
 
     delta_i = 2 * (1 - radius)
 
-    dots = []
-
     eps = 0
 
     while (x < y):
 
-        add_dots_circle(dots, [x_c, y_c], [x, y], color)
+        if draw:
+            draw_dots_circle(canvas_win, [x_c, y_c], [x, y], color)
 
         if (delta_i < 0):
             eps = 2 * delta_i + 2 * y - 1
@@ -69,23 +52,9 @@ def bresenham_circle(dot_c, radius, color):
             y = y - 1
             delta_i = delta_i - 2 * y + 1
 
-    return dots
 
 
-def add_dots_ellipse(dots, dot_c, dot_dif, color):
-    x_c = dot_c[0]
-    y_c = dot_c[1]
-
-    x = dot_dif[0]
-    y = dot_dif[1]
-
-    dots.append([x_c + x, y_c + y, color])
-    dots.append([x_c - x, y_c + y, color])
-    dots.append([x_c + x, y_c - y, color])
-    dots.append([x_c - x, y_c - y, color])
-
-
-def bresenham_ellipse(dot_c, rad, color):
+def bresenham_ellipse(canvas_win, dot_c, rad, color, draw):
 
     x_c = round(dot_c[0])
     y_c = round(dot_c[1])
@@ -96,16 +65,15 @@ def bresenham_ellipse(dot_c, rad, color):
     r_a_2 = rad[0] * rad[0]
     r_b_2 = rad[1] * rad[1]
 
-    #delta_i = r_a_2 + r_b_2 - r_a_2 * (2 * y)
     delta_i = r_b_2 - r_a_2 * (2 * y + 1)
 
-    dots = []
 
     eps = 0
 
     while (y >= 0):
 
-        add_dots_ellipse(dots, [x_c, y_c], [x, y], color)
+        if draw:
+            draw_dots_ellipse(canvas_win, [x_c, y_c], [x, y], color)
 
         if (delta_i <= 0):
             eps = 2 * delta_i + (2 * y + 2) * r_a_2
@@ -135,5 +103,3 @@ def bresenham_ellipse(dot_c, rad, color):
             y = y - 1
             delta_i = delta_i - (2 * y) * r_a_2 + r_a_2
 
-
-    return dots

@@ -4,10 +4,10 @@
 
 from math import sqrt
 
-from bresenham_method import add_dots_circle, add_dots_ellipse
+from draw import draw_dots_circle, draw_dots_ellipse
 
 
-def mid_dot_circle(dot_c, radius, color):
+def mid_dot_circle(canvas_win, dot_c, radius, color, draw):
 
     x_c = dot_c[0]
     y_c = dot_c[1]
@@ -17,10 +17,9 @@ def mid_dot_circle(dot_c, radius, color):
 
     delta = 1 - radius
 
-    dots = []
-
     while (x <= y):
-        add_dots_circle(dots, [x_c, y_c], [x, y], color)
+        if draw:
+            draw_dots_circle(canvas_win, [x_c, y_c], [x, y], color)
 
         x += 1
 
@@ -30,10 +29,8 @@ def mid_dot_circle(dot_c, radius, color):
             y -= 1
             delta = delta + 2 * (x - y) + 1
 
-    return dots
 
-
-def mid_dot_ellipse(dot_c, rad, color):
+def mid_dot_ellipse(canvas_win, dot_c, rad, color, draw):
 
     x_c = dot_c[0]
     y_c = dot_c[1]
@@ -48,10 +45,9 @@ def mid_dot_ellipse(dot_c, rad, color):
 
     delta = r_b_2 - round(r_a_2 * (rad[1] - 1 / 4))
 
-    dots = []
-
     while (x <= edge):
-        add_dots_ellipse(dots, [x_c, y_c], [x, y], color)
+        if draw:
+            draw_dots_ellipse(canvas_win, [x_c, y_c], [x, y], color)
 
         if (delta > 0):
             y -= 1
@@ -72,7 +68,8 @@ def mid_dot_ellipse(dot_c, rad, color):
     delta = r_a_2 - round(r_b_2 * (x - 1 / 4))
 
     while (y <= edge):
-        add_dots_ellipse(dots, [x_c, y_c], [x, y], color)
+        if draw:
+            draw_dots_ellipse(canvas_win, [x_c, y_c], [x, y], color)
 
         if (delta > 0):
             x -= 1
@@ -82,7 +79,6 @@ def mid_dot_ellipse(dot_c, rad, color):
 
         delta = delta + r_a_2 * (2 * y + 1)
 
-    return dots    
 
 
 
