@@ -78,13 +78,16 @@ def parse_spektr_ellips(option, option_color, option_figure):
 
     index = 0
 
+    koef = r_b / r_a
+
+
     while (index < amount):
         rad = [r_a, r_b]
 
         parse_methods(dot_c, rad, option, option_color, option_figure)
 
         r_a += rad_step
-        r_b += rad_step
+        r_b = (r_a * koef)
         
         index += 1
 
@@ -396,7 +399,7 @@ def time_measure(option_figure):
 
         # clear_canvas()
 
-    rad_arr = list(i for i in range(STEP, MAX_RADIUS + STEP, STEP))
+    rad_arr = list(i for i in range(0, MAX_RADIUS, STEP))
     plt.figure(figsize = (14, 6))
 
     plt.title("Замеры времени для различных методов\nФигура: " + name)
@@ -590,7 +593,7 @@ if __name__ == "__main__":
     remove_txt.place(x = CV_WIDE + 25, y = 630)
 
     option_spektr_crcl = IntVar()
-    option_spektr_crcl.set(1)
+    option_spektr_crcl.set(4)
 
     spektr_crcl_remove_step = Radiobutton(text = "Шаг", font="-family {Consolas} -size 14", variable = option_spektr_crcl, value = 1, bg = BOX_COLOR, activebackground = BOX_COLOR, highlightbackground = BOX_COLOR, command = lambda : remove_btn_spektr_cicle(option_spektr_crcl.get()))
 
@@ -626,20 +629,20 @@ if __name__ == "__main__":
 
     rad_circle_entry.insert(END, "30")
 
-    amount_elps_entry.insert(END, "50")
-    rad_step_elps_entry.insert(END, "5")
+    amount_elps_entry.insert(END, "30")
+    rad_step_elps_entry.insert(END, "10")
 
-    rad_begin_crcl_entry.insert(END, "10")
+    rad_a_elps_entry.insert(END, "40")
+    rad_b_elps_entry.insert(END, "20")
+
+    rad_begin_crcl_entry.insert(END, "30")
     rad_end_crcl_entry.insert(END, "90")
 
-    rad_step_crcl_entry.insert(END, "3")
+    rad_step_crcl_entry.insert(END, "5")
 
     amount_crcl_entry.insert(END, "50")
 
-    rad_a_elps_entry.insert(END, "10")
-    rad_b_elps_entry.insert(END, "50")
-
-    remove_btn_spektr_cicle(1) # set remove step
+    remove_btn_spektr_cicle(4) # set remove step
     change_figure(1) # set circle
 
     win.mainloop()

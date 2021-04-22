@@ -19,12 +19,12 @@ def bresenham_circle(canvas_win, dot_c, radius, color, draw):
 
     eps = 0
 
-    while (x < y):
+    while (x <= y):
 
         if draw:
             draw_dots_circle(canvas_win, [x_c, y_c], [x, y], color)
 
-        if (delta_i < 0):
+        if (delta_i <= 0):
             eps = 2 * delta_i + 2 * y - 1
 
             if (eps < 0):
@@ -38,8 +38,6 @@ def bresenham_circle(canvas_win, dot_c, radius, color, draw):
                 param = 2
             else:
                 param = 3
-        else:
-            param = 2
 
         if (param == 1):
             x = x + 1
@@ -89,9 +87,7 @@ def bresenham_ellipse(canvas_win, dot_c, rad, color, draw):
                 param = 2
             else:
                 param = 3
-        else:
-            param = 2
-
+        
         if (param == 1):
             x = x + 1
             delta_i = delta_i + (2 * x) * r_b_2 + r_b_2
