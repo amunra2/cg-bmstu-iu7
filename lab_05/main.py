@@ -135,7 +135,7 @@ def add_dot(x, y):
 
     cur_dot = len(dots[cur_figure]) - 1
 
-    dotslist_box.insert(END, "%d. (%-3.1f;%-3.1f)" %(cur_dot + 1, x, y))
+    dotslist_box.insert(END, "%d. (%4d;%4df)" %(cur_dot + 1, x, y))
 
     if (len(dots[cur_figure]) > 1):
         sides_list[cur_figure].append([dots[cur_figure][cur_dot - 1], dots[cur_figure][cur_dot]])
@@ -284,8 +284,6 @@ def parse_fill():
         messagebox.showerror("Ошибка", "Крайняя фигура не замкнута")
         return
 
-
-
     block_edges = get_edges(dots)
 
     if (option_filling.get() == 1):
@@ -334,7 +332,7 @@ def fill_with_sides_and_flag(sides_list, block_edges, color_fill, delay = False)
         for side in fig:
             bresenham_int(side[0], side[1], COLOR_LINE)
 
-    time_label = Label(text = "Время: %-3.2f мс" %(end_time - start_time), font="-family {Consolas} -size 16", bg = "lightgrey")
+    time_label = Label(text = "Время: %-3.2f с" %(end_time - start_time), font="-family {Consolas} -size 16", bg = "lightgrey")
     time_label.place(x = 20, y = CV_HEIGHT - 50)
 
 
@@ -458,11 +456,8 @@ if __name__ == "__main__":
 
     # Time and clear
 
-    time_label = Label(text = "Время: %-3.2f мс" %(0), font="-family {Consolas} -size 16", bg = "lightgrey")
+    time_label = Label(text = "Время: %-3.2f с" %(0), font="-family {Consolas} -size 16", bg = "lightgrey")
     time_label.place(x = 20, y = CV_HEIGHT - 50)
-
-    # time_count_btn = Button(win, width = 21, height = 2, text = "Вывести замеры времени", font="-family {Consolas} -size 14", command = lambda: round_figure())
-    # time_count_btn.place(x = CV_WIDE + 35, y = 700)
 
     clear_win_btn = Button(win, width = 42, height = 2, text = "Очистить экран", font="-family {Consolas} -size 14", command = lambda: reboot_prog())
     clear_win_btn.place(x = CV_WIDE + 50, y = 830)
