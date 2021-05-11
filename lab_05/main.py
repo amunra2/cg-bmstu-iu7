@@ -129,13 +129,14 @@ def add_dot_click(event):
     add_dot(x, y)
 
 
-def add_dot(x, y):
+def add_dot(x, y, last = True):
     cur_figure = len(dots) - 1
     dots[cur_figure].append([x, y])
 
     cur_dot = len(dots[cur_figure]) - 1
 
-    dotslist_box.insert(END, "%d. (%4d;%4df)" %(cur_dot + 1, x, y))
+    if (last):
+        dotslist_box.insert(END, "%d. (%4d;%4d)" %(cur_dot + 1, x, y))
 
     if (len(dots[cur_figure]) > 1):
         sides_list[cur_figure].append([dots[cur_figure][cur_dot - 1], dots[cur_figure][cur_dot]])
@@ -159,9 +160,9 @@ def del_dot():
     index = 0
 
     for i in range(cur_figure + 1):
-        index += len(dots[i])
+        index += (len(dots[i]))
 
-    index += cur_figure
+    #index += cur_figure
 
 
     dotslist_box.delete(index - 1, END)
@@ -176,9 +177,7 @@ def make_figure():
     if (cur_dot < 3):
         messagebox.showerror("Ошибка", "Недостаточно точек, чтобы замкнуть фигуру")
 
-    
-
-    add_dot(dots[cur_figure - 1][0][0], dots[cur_figure - 1][0][1])
+    add_dot(dots[cur_figure - 1][0][0], dots[cur_figure - 1][0][1], last = False)
 
     dots.append(list())
     sides_list.append(list())
@@ -238,8 +237,6 @@ def round_side(dot1, dot2):
         y += 1
 
         canvas_win.update()
-
-
 
 
 def round_figure():
@@ -311,7 +308,7 @@ def fill_with_sides_and_flag(sides_list, block_edges, color_fill, delay = False)
     for y in range(y_min, y_max - 1, -1):
         flag = False
 
-        for x in range(x_min, x_max):
+        for x in range(x_min, x_max + 2):
 
             if (image_canvas.get(x, y) == TEMP_SIDE_COLOR_CHECK):
                 flag = not flag
