@@ -137,14 +137,21 @@ def add_seed_dot_click(event):
 
     seed_dot = [x, y]
 
+    x_seed_entry.delete(0, END)
+    x_seed_entry.insert(END, "%d" %(x))
+    y_seed_entry.delete(0, END)
+    y_seed_entry.insert(END, "%d" %(y))
 
-def add_dot(x, y):
+
+
+def add_dot(x, y, last = True):
     cur_figure = len(dots) - 1
     dots[cur_figure].append([x, y])
 
     cur_dot = len(dots[cur_figure]) - 1
 
-    dotslist_box.insert(END, "%d. (%4d;%4d)" %(cur_dot + 1, x, y))
+    if (last):
+        dotslist_box.insert(END, "%d. (%4d;%4d)" %(cur_dot + 1, x, y))
 
     if (len(dots[cur_figure]) > 1):
         bresenham_int(dots[cur_figure][cur_dot - 1], dots[cur_figure][cur_dot], COLOR_LINE)
@@ -167,7 +174,7 @@ def del_dot():
     for i in range(cur_figure + 1):
         index += len(dots[i])
 
-    index += cur_figure
+    #index += cur_figure
 
 
     dotslist_box.delete(index - 1, END)
@@ -182,7 +189,7 @@ def make_figure():
     if (cur_dot < 3):
         messagebox.showerror("Ошибка", "Недостаточно точек, чтобы замкнуть фигуру")
 
-    add_dot(dots[cur_figure - 1][0][0], dots[cur_figure - 1][0][1])
+    add_dot(dots[cur_figure - 1][0][0], dots[cur_figure - 1][0][1], last = False)
 
     dots.append(list())
 
@@ -232,16 +239,12 @@ def fill_with_seed(dot_seed, color_fill, delay = False):
 
     color_fill_check = get_fill_check_color(color_fill)
 
-    
     start_time = time()
-
-    # all_time = 0
 
     stack = list()
     stack.append(dot_seed)
 
     while (stack):
-        # start_cycle_time = time()
 
         dot_seed = stack.pop()
 
@@ -346,17 +349,11 @@ def fill_with_seed(dot_seed, color_fill, delay = False):
             if (x == x_begin):
                 x = x + 1
 
-        # end_cycle_time = time()
-        # all_time += (end_cycle_time - start_cycle_time)
-
         if (delay):
             sleep(0.001)
             canvas_win.update()
 
     end_time = time()
-
-    # print(end_time - start_time)
-    # print(all_time)
 
     time_label = Label(text = "Время: %-3.2f с" %(end_time - start_time), font="-family {Consolas} -size 16", bg = "lightgrey")
     time_label.place(x = 20, y = CV_HEIGHT - 50)

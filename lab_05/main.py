@@ -40,11 +40,8 @@ def clear_canvas():
 
 
 def draw_dot(x, y, color):
-    # canvas_win.create_line(x, y, x + 1, y, fill = color)
     image_canvas.put(color, (x, y))
     
-    # for dot in dots:
-    #     canvas_win.create_line(dot[0], dot[1], dot[0] + 1, dot[1], fill = dot[2].hex)
 
 
 def sign(difference):
@@ -89,9 +86,6 @@ def bresenham_int(p1, p2, color):
     while (i <= dx + 1):
 
         draw_dot(x, y, color)
-
-        # dot = [x, y, color]
-        # dots.append(dot)
 
         while (e >= 0):
             if (swaped):
@@ -186,7 +180,6 @@ def make_figure():
 
 
 def line_koefs(x1, y1, x2, y2):
-
     a = y1 - y2
     b = x2 - x1
     c = x1*y2 - x2*y1
@@ -194,9 +187,7 @@ def line_koefs(x1, y1, x2, y2):
     return a, b, c
 
 
-
 def solve_lines_intersection(a1, b1, c1, a2, b2, c2):
-
     opr = a1*b2 - a2*b1
     opr1 = (-c1)*b2 - b1*(-c2)
     opr2 = a1*(-c2) - (-c1)*a2
@@ -229,10 +220,10 @@ def round_side(dot1, dot2):
 
         x_intersec, y_intersec = solve_lines_intersection(a_side, b_side, c_side, a_scan_line, b_scan_line, c_scan_line)  
 
-        if (image_canvas.get(int(x_intersec) + 1, int(y_intersec)) != TEMP_SIDE_COLOR_CHECK):
-            image_canvas.put(TEMP_SIDE_COLOR, (int(x_intersec) + 1, int(y_intersec)))
+        if (image_canvas.get(int(x_intersec) + 1, y) != TEMP_SIDE_COLOR_CHECK):
+            image_canvas.put(TEMP_SIDE_COLOR, (int(x_intersec) + 1, y))
         else:
-            image_canvas.put(TEMP_SIDE_COLOR, (int(x_intersec) + 2, int(y_intersec)))
+            image_canvas.put(TEMP_SIDE_COLOR, (int(x_intersec) + 2, y))
 
         y += 1
 
@@ -324,7 +315,7 @@ def fill_with_sides_and_flag(sides_list, block_edges, color_fill, delay = False)
 
     end_time = time()
 
-    #Sides
+    # Sides
     for fig in sides_list:
         for side in fig:
             bresenham_int(side[0], side[1], COLOR_LINE)
@@ -393,13 +384,13 @@ if __name__ == "__main__":
     add_dot_text = Label(win, text = "Добавить точку", width = 43, font="-family {Consolas} -size 16", bg = MAIN_TEXT_COLOR)
     add_dot_text.place(x = CV_WIDE + 20, y = 30)
 
-    x_text = Label(text = "x1: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    x_text = Label(text = "x: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
     x_text.place(x = CV_WIDE + 70, y = 70)
 
     x_entry = Entry(font="-family {Consolas} -size 14", width = 9)
     x_entry.place(x = CV_WIDE + 130, y = 70)
 
-    y_text = Label(text = "y1: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
+    y_text = Label(text = "y: ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
     y_text.place(x = CV_WIDE + 330, y = 70)
 
     y_entry = Entry(font="-family {Consolas} -size 14", width = 9)
