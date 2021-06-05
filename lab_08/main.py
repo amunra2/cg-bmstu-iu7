@@ -4,6 +4,7 @@ from math import sqrt, acos, degrees, pi, sin, cos, radians, floor, fabs
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
+from itertools import combinations
 
 from time import time, sleep
 
@@ -112,11 +113,11 @@ def is_maked():
 
 def add_dot(x, y, last = True):
     if (is_maked()): # для задания нового отсекателя
-            cutter.clear()
-            canvas_win.delete("all")
-            draw_lines()
-            dotslist_box.delete(0, END)
-            return
+        cutter.clear()
+        canvas_win.delete("all")
+        draw_lines()
+        dotslist_box.delete(0, END)
+            
 
     cutter_color = parse_color(option_color_cutter.get())
 
@@ -180,11 +181,17 @@ def draw_lines():
 
 
 def add_line_click(event):
-
-    line_color = parse_color(option_color_line.get())
     
     x = event.x
     y = event.y
+
+    add_line(x, y)
+
+
+
+
+def add_line(x, y):
+    line_color = parse_color(option_color_line.get())
 
     cur_line = len(lines) - 1
 
@@ -204,7 +211,8 @@ def add_line_click(event):
         canvas_win.create_line(x1, y1, x2, y2, fill = line_color)
 
 
-def add_line():
+
+def read_line():
     global lines
 
     try:
@@ -242,6 +250,79 @@ def scalar_mul(vec1, vec2):
     return (vec1[0] * vec2[0] + vec1[1] * vec2[1])
 
 
+def line_koefs(x1, y1, x2, y2):
+    a = y1 - y2
+    b = x2 - x1
+    c = x1*y2 - x2*y1
+
+    return a, b, c
+
+
+def solve_lines_intersection(a1, b1, c1, a2, b2, c2):
+    opr = a1*b2 - a2*b1
+    opr1 = (-c1)*b2 - b1*(-c2)
+    opr2 = a1*(-c2) - (-c1)*a2
+
+    if (opr == 0):
+        return -5, -5 # прямые параллельны
+
+    x = opr1 / opr
+    y = opr2 / opr
+
+    return x, y
+
+
+def is_coord_between(left_coord, right_coord, dot_coord):
+    return (min(left_coord, right_coord) <= dot_coord) \
+            and (max(left_coord, right_coord) >= dot_coord)
+
+
+def is_dot_between(dot_left, dot_right, dot_intersec):
+    return is_coord_between(dot_left[X_DOT], dot_right[X_DOT], dot_intersec[X_DOT]) \
+            and is_coord_between(dot_left[Y_DOT], dot_right[Y_DOT], dot_intersec[Y_DOT])
+
+
+def are_connected_sides(line1, line2):
+
+    if ((line1[0][X_DOT] == line2[0][X_DOT]) and (line1[0][Y_DOT] == line2[0][Y_DOT])) \
+            or ((line1[1][X_DOT] == line2[1][X_DOT]) and (line1[1][Y_DOT] == line2[1][Y_DOT])) \
+            or ((line1[0][X_DOT] == line2[1][X_DOT]) and (line1[0][Y_DOT] == line2[1][Y_DOT])) \
+            or ((line1[1][X_DOT] == line2[0][X_DOT]) and (line1[1][Y_DOT] == line2[0][Y_DOT])):
+        return True
+
+    return False
+
+
+
+def extra_check(): # чтобы не было пересечений
+    
+    cutter_lines = []
+
+    for i in range(len(cutter) - 1):
+        cutter_lines.append([cutter[i], cutter[i + 1]]) # разбиваю отсекатель на линии
+
+    combs_lines = list(combinations(cutter_lines, 2)) # все возможные комбинации сторон
+
+    for i in range(len(combs_lines)):
+        line1 = combs_lines[i][0]
+        line2 = combs_lines[i][1]
+
+        if (are_connected_sides(line1, line2)):
+            print("Connected")
+            continue
+
+        a1, b1, c1 = line_koefs(line1[0][X_DOT], line1[0][Y_DOT], line1[1][X_DOT], line1[1][Y_DOT])
+        a2, b2, c2 = line_koefs(line2[0][X_DOT], line2[0][Y_DOT], line2[1][X_DOT], line2[1][Y_DOT])
+
+        dot_intersec = solve_lines_intersection(a1, b1, c1, a2, b2, c2)
+
+        if (is_dot_between(line1[0], line1[1], dot_intersec)) \
+                and (is_dot_between(line2[0], line2[1], dot_intersec)):
+            return True
+
+    return False
+
+
 def check_polygon(): # через проход по всем точкам, поворот которых должен быть все время в одну сторону
     if (len(cutter) < 3):
         return False
@@ -249,13 +330,20 @@ def check_polygon(): # через проход по всем точкам, по�
     sign = 0
 
     if (vector_mul(get_vector(cutter[1], cutter[2]), get_vector(cutter[0], cutter[1])) > 0):
-        sign = 1 # по часовой стрелке
+        sign = 1
     else:
-        sign = -1 # против часовой стрелки
+        sign = -1
 
     for i in range(3, len(cutter)):
         if sign * vector_mul(get_vector(cutter[i - 1], cutter[i]), get_vector(cutter[i - 2], cutter[i - 1])) < 0:
             return False
+
+    check = extra_check()
+
+    print("\n\nResult:", check, "\n\n")
+
+    if (check):
+        return False
 
     return True
 
@@ -274,25 +362,7 @@ def get_normal(dot1, dot2, pos):
         normal[0] = -normal[0]
         normal[1] = -normal[1]
 
-    # normal = []
-
-    # if (vect[0] == 0):
-    #     normal = [1, 0]
-    # else:
-    #     normal = [-vect[1] / vect[0], 1]
-
-    # if (scalar_mul(get_vector(dot2, cp), normal) < 0):
-    #     for i in range(len(normal)):
-    #         normal[i] = -normal[i]
-
     return normal
-
-
-# def get_normals_all():
-#     normals = list()
-
-#     for i in range(len(cutter)):
-#         normals.append(get_normal(cutter[i], cutter[(i + 1) % len(cutter)]))
 
 
 def cyrus_beck_algorithm(line, count):
@@ -301,8 +371,8 @@ def cyrus_beck_algorithm(line, count):
 
     d = [dot2[X_DOT] - dot1[X_DOT], dot2[Y_DOT] - dot1[Y_DOT]]
 
-    t_top = 0
-    t_bottom = 1
+    t_bottom = 0
+    t_top = 1
 
     for i in range(-2, count - 2):
         normal = get_normal(cutter[i], cutter[i + 1], cutter[i + 2])
@@ -322,28 +392,25 @@ def cyrus_beck_algorithm(line, count):
 
         if (d_scalar > 0):
             if (t <= 1):
-                t_top = max(t_top, t)
+                t_bottom = max(t_bottom, t)
             else:
                 return
         elif (d_scalar < 0):
             if (t >= 0):
-                t_bottom = min(t_bottom, t)
+                t_top = min(t_top, t)
             else:
                 return
 
-        if (t_top > t_bottom):
+        if (t_bottom > t_top):
             break
     
-    dot1_res = [round(dot1[X_DOT] + d[X_DOT] * t_top), round(dot1[Y_DOT] + d[Y_DOT] * t_top)]
 
-    dot2_res = [round(dot1[X_DOT] + d[X_DOT] * t_bottom), round(dot1[Y_DOT] + d[Y_DOT] * t_bottom)]
-
-
+    dot1_res = [round(dot1[X_DOT] + d[X_DOT] * t_bottom), round(dot1[Y_DOT] + d[Y_DOT] * t_bottom)]
+    dot2_res = [round(dot1[X_DOT] + d[X_DOT] * t_top), round(dot1[Y_DOT] + d[Y_DOT] * t_top)]
     
     res_color = parse_color(option_color_cut_line.get())
 
-
-    if (t_top <= t_bottom):
+    if (t_bottom <= t_top):
         canvas_win.create_line(dot1_res, dot2_res, fill = res_color)
 
 
@@ -351,23 +418,80 @@ def cyrus_beck_algorithm(line, count):
 # TODO
 
 
+def find_start_dot():
+    y_max = cutter[0][Y_DOT]
+    dot_index = 0
+
+    for i in range(len(cutter)):
+        if (cutter[i][Y_DOT] > y_max):
+            y_max = cutter[i][Y_DOT]
+            dot_index = i
+
+    cutter.pop()
+
+    for _ in range(dot_index):
+        cutter.append(cutter.pop(0))
+
+    cutter.append(cutter[0])
+
+    if (cutter[-2][0] > cutter[1][0]):
+        cutter.reverse()
+
+
 def cut_area():
+
+    if (not is_maked()):
+        messagebox.showinfo("Ошибка", "Отсекатель не замкнут")
+        return
 
     if (len(cutter) < 3):
         messagebox.showinfo("Ошибка", "Не задан отсекатель")
+        return
 
     if (not check_polygon()):
         messagebox.showinfo("Ошибка", "Отсекатель должен быть выпуклым многоугольником")
+        return
 
     cutter_color = parse_color(option_color_cutter.get())
-
     canvas_win.create_polygon(cutter, outline = cutter_color, fill = "white")
 
+    find_start_dot()
+
+    dot = cutter.pop()
 
     for line in lines:
         if (line):
             cyrus_beck_algorithm(line, len(cutter))
 
+    cutter.append(dot)
+
+
+
+def add_paral_line_cutter(event):
+    print("Pressed: Space", event.x, event.y)
+
+    dif_x = abs(event.x - cutter[len(cutter) - 1][X_DOT])
+    dif_y = abs(event.y - cutter[len(cutter) - 1][Y_DOT])
+
+    if (dif_x > dif_y):
+        add_dot(event.x, cutter[len(cutter) - 1][Y_DOT])
+    else:
+        add_dot(cutter[len(cutter) - 1][X_DOT], event.y)
+
+
+def add_paral_line_line(event):
+    print("Pressed: Control_L", event.x, event.y)
+
+    cur_line = len(lines) - 1
+
+    if (len(lines[cur_line]) > 0):
+        dif_x = abs(event.x - lines[cur_line][0][X_DOT])
+        dif_y = abs(event.y - lines[cur_line][0][Y_DOT])
+
+        if (dif_x > dif_y):
+            add_line(event.x, lines[cur_line][0][Y_DOT])
+        else:
+            add_line(lines[cur_line][0][X_DOT], event.y)
 
 
 if __name__ == "__main__":
@@ -389,14 +513,11 @@ if __name__ == "__main__":
     lines = [[]]
     canvas_win.bind("<3>", add_line_click)
 
-    #canvas_win.bind("<1>", add_rect_click1)
-
     cutter = []
     canvas_win.bind("<1>", add_dot_click)
 
-    #canvas_win.bind('<B1-Motion>', add_rect_click)
-    
-    #canvas_win.bind('LeftCtrl', add_vert_horiz_lines)
+    canvas_win.bind('<space>', add_paral_line_cutter)
+    canvas_win.bind('<Control_L>', add_paral_line_line)
 
     # Add cutter
 
