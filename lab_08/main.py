@@ -348,7 +348,6 @@ def check_polygon(): # через проход по всем точкам, по�
     return True
 
 
-
 def get_normal(dot1, dot2, pos):
     f_vect = get_vector(dot1, dot2)
     pos_vect = get_vector(dot2, pos)
