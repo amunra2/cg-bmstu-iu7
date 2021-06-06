@@ -2,8 +2,10 @@ from tkinter import Tk, Button, Label, Entry, END, Listbox, Canvas, Radiobutton,
 from tkinter import messagebox
 from math import sqrt, acos, degrees, pi, sin, cos, radians, floor, fabs
 import copy
+from tkinter.constants import Y
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy import arange
 
 from time import time, sleep
 
@@ -32,13 +34,13 @@ FILL_COLOR = "#ff6e41"
 
 # Define
 
-X_MIN = 0
-X_MAX = 1
-Y_MIN = 2
-Y_MAX = 3
-
 X_DOT = 0
 Y_DOT = 1
+Z_DOT = 2
+
+FROM = 0
+TO = 1
+STEP = 2
 
 # For rectangle
 is_set_rect = False
@@ -57,15 +59,8 @@ def get_fill_check_color(collor_fill):
 
 
 def reboot_prog():
-    global lines
-    global cutter
 
     canvas_win.delete("all")
-
-    cutter = []
-    figure = []
-    cutter_dotslist_box.delete(0, END)
-    figure_dotslist_box.delete(0, END)
 
 
 def parse_color(num_color):
@@ -82,6 +77,176 @@ def parse_color(num_color):
 
     return color
 
+
+def parse_funcs(func_num):
+    func = lambda x, z: sin(x) * cos(z)
+
+    if (func_num == 1):
+        func = lambda x, z: sin(x) * sin(z)
+    elif (func_num == 2):
+        func = lambda x, z: sin(cos(x)) * sin(z)
+    elif (func_num == 3):
+        func = lambda x, z: cos(x) * z / 3
+
+    return func
+
+
+def read_limits():
+    try:
+        x_from = float(x_from_entry.get())
+        x_to = float(x_to_entry.get())
+        x_step = float(x_step_entry.get())
+
+        x_limits = [x_from, x_to, x_step]
+
+        z_from = float(z_from_entry.get())
+        z_to = float(z_to_entry.get())
+        z_step = float(z_step_entry.get())
+
+        z_limits = [z_from, z_to, z_step]
+    
+        return x_limits, z_limits
+    except:
+        return
+
+
+def read_scale():
+    try:
+        scale_param = float(scale_entry.get())
+
+        return scale_param
+    except:
+        return
+
+
+trans_matrix = [[int(i == j) for i in range(4)] for j in range(4)]
+
+
+def trans_dot(dot):
+    dot.append(1) 
+
+    print(dot)
+
+    res_dot = [0, 0, 0, 0]
+
+    for i in range(4):
+        for j in range(4):
+            res_dot[i] += dot[j] * trans_matrix[j][i]
+
+    print(res_dot)
+
+    scale_param = read_scale()
+
+    for i in range(3):
+        res_dot[i] *= scale_param
+
+    res_dot[0] += CV_WIDE // 2
+    res_dot[1] += CV_HEIGHT // 2
+
+    return res_dot[:3]
+
+
+def is_visible(dot):
+    return (0 <= dot[X_DOT] <= CV_WIDE) and \
+            (0 <= dot[Y_DOT] <= CV_HEIGHT)
+
+
+def draw_pixel(x, y):
+    color = parse_color(option_color_graph.get())
+
+    canvas_win.create_line(x, y, x + 1, y + 1, fill = color)
+
+
+def draw_dot(x, y, high_horizon, low_horizon):
+    if (not is_visible([x, y])):
+        return False
+
+    if (y > high_horizon[x]):
+        high_horizon[x] = y
+        draw_pixel(x, y)
+    elif (y < low_horizon[x]):
+        low_horizon[x] = y
+        draw_pixel(x, y)
+
+    return True
+
+
+def draw_horizon_part(dot1, dot2, high_horizon, low_horizon):
+    if (dot1[X_DOT] > dot2[X_DOT]):
+        dot1, dot2 = dot2, dot1
+
+    #print(dot1, dot2)
+
+    dx = dot2[X_DOT] - dot1[X_DOT]
+    dy = dot2[Y_DOT] - dot1[Y_DOT]
+
+    if (dx > dy):
+        l = dx
+    else:
+        l = dy
+
+    #print(dx, dy, l)
+
+    dx /= l
+    dy /= l
+
+    x = dot1[X_DOT]
+    y = dot1[Y_DOT]
+
+    for _ in range(int(l) + 1):
+        if (not draw_dot(round(x), y, high_horizon, low_horizon)):
+            return
+
+        x += dx
+        y += dy
+
+
+def draw_horizon(function, high_horizon, low_horizon, limits, z):
+    f = lambda x: function(x, z)
+
+    prev = None
+
+    for x in arange(limits[FROM], limits[TO] + limits[STEP], limits[STEP]):
+        cur = trans_dot([x, f(x), z])
+
+        if (prev):
+            draw_horizon_part(prev, cur, high_horizon, low_horizon)
+
+        prev = cur
+
+
+
+def build_graph():
+    reboot_prog()
+
+    f = parse_funcs(option_function.get())
+
+    x_limits, z_limits = read_limits()
+
+    print(x_limits, z_limits)
+
+    high_horizon = [0 for i in range(CV_WIDE)] # ???
+    low_horizon = [CV_HEIGHT for i in range(CV_WIDE)]
+
+
+    for z in arange(z_limits[FROM], z_limits[TO] + z_limits[STEP], z_limits[STEP]):
+        draw_horizon(f, high_horizon, low_horizon, x_limits, z)
+
+    color = parse_color(option_color_graph.get())
+
+    for z in arange(z_limits[FROM], z_limits[TO] + z_limits[STEP], z_limits[STEP]):
+        dot1 = trans_dot([x_limits[FROM], f(x_limits[FROM], z), z])
+        dot2 = trans_dot([x_limits[FROM], f(x_limits[FROM], z + x_limits[STEP]), z + x_limits[STEP]])
+
+        canvas_win.create_line(dot1[X_DOT], dot1[Y_DOT], dot2[X_DOT], dot2[Y_DOT], fill = color)
+
+        dot1 = trans_dot([x_limits[TO], f(x_limits[TO], z), z])
+        dot2 = trans_dot([x_limits[TO], f(x_limits[TO], z + x_limits[STEP]), z + x_limits[STEP]])
+
+        canvas_win.create_line(dot1[X_DOT], dot1[Y_DOT], dot2[X_DOT], dot2[Y_DOT], fill = color)
+    
+
+    
 
 
 
@@ -176,6 +341,14 @@ if __name__ == "__main__":
     # x_step_entry = Entry(font="-family {Consolas} -size 14", width = 6)
     x_step_entry.place(x = CV_WIDE + 480, y = 265)
 
+    # Insert
+    x_from_entry.delete(0, END)
+    x_from_entry.insert(0, "-10")
+    x_to_entry.delete(0, END)
+    x_to_entry.insert(0, "10")
+    x_step_entry.delete(0, END)
+    x_step_entry.insert(0, "0.1")
+
 
     # Axis OZ
     z_limit_text = Label(text = "Ось Z  -- ", font="-family {Consolas} -size 14", bg = BOX_COLOR)
@@ -198,6 +371,14 @@ if __name__ == "__main__":
     z_step_entry = Spinbox(font="-family {Consolas} -size 14", from_=0.0, to=1000.0, increment=1.0, width = 6)
     # z_step_entry = Entry(font="-family {Consolas} -size 14", width = 6)
     z_step_entry.place(x = CV_WIDE + 480, y = 315)
+
+    # Insert
+    z_from_entry.delete(0, END)
+    z_from_entry.insert(0, "-10")
+    z_to_entry.delete(0, END)
+    z_to_entry.insert(0, "10")
+    z_step_entry.delete(0, END)
+    z_step_entry.insert(0, "0.1")
 
 
     # Set spin
@@ -267,6 +448,10 @@ if __name__ == "__main__":
     scale_btn = Button(win, text = "Масштабировать", width = 14, height = 1, font="-family {Consolas} -size 14", command = lambda: cut_area())
     scale_btn.place(x = CV_WIDE + 190, y = 655)
 
+    # Insert
+    scale_entry.delete(0, END)
+    scale_entry.insert(0, "48")
+
     
 
     # TODO Choose cut line color 
@@ -293,7 +478,7 @@ if __name__ == "__main__":
     color_graph_green.place(x = CV_WIDE + 400, y = 780)
 
 
-    cut_btn = Button(win, text = "Результат", width = 18, height = 2, font="-family {Consolas} -size 14", command = lambda: cut_area())
+    cut_btn = Button(win, text = "Результат", width = 18, height = 2, font="-family {Consolas} -size 14", command = lambda: build_graph())
     cut_btn.place(x = CV_WIDE + 20, y = 830)
 
     clear_btn = Button(win, text = "Очистить экран", width = 18, height = 2, font="-family {Consolas} -size 14", command = lambda: reboot_prog())
