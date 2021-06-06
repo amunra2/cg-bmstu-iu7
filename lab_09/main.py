@@ -364,7 +364,6 @@ def check_polygon(): # через проход по всем точкам, по�
     return True
 
 
-
 def get_normal(dot1, dot2, pos):
     f_vect = get_vector(dot1, dot2)
     pos_vect = get_vector(dot2, pos)
@@ -494,6 +493,7 @@ def make_unique(sides):
 
     return list(filter(lambda x: (sides.count(x) % 2) == 1, sides))
 
+
 def is_dot_in_side(dot, side):
     if abs(vector_mul(get_vector(dot, side[0]), get_vector(side[1], side[0]))) <= 1e-6:
         if (side[0] < dot < side[1] or side[1] < dot < side[0]):
@@ -518,7 +518,6 @@ def get_sides(side, rest_dots):
     return sections_list
 
 
-
 def remove_odd_sides(figure_dots):
     all_sides = list()
     rest_dots = figure_dots[2:]
@@ -534,6 +533,35 @@ def remove_odd_sides(figure_dots):
     return make_unique(all_sides)
 
 
+
+def add_paral_line_cutter(event):
+    print("Pressed: Space", event.x, event.y)
+
+    if (len(cutter) < 1):
+        return
+
+    dif_x = abs(event.x - cutter[len(cutter) - 1][X_DOT])
+    dif_y = abs(event.y - cutter[len(cutter) - 1][Y_DOT])
+
+    if (dif_x > dif_y):
+        add_dot_cutter(event.x, cutter[len(cutter) - 1][Y_DOT])
+    else:
+        add_dot_cutter(cutter[len(cutter) - 1][X_DOT], event.y)
+
+
+def add_paral_line_figure(event):
+    print("Pressed: Control_L", event.x, event.y)
+
+    if (len(figure) < 1):
+        return
+
+    dif_x = abs(event.x - figure[len(figure) - 1][X_DOT])
+    dif_y = abs(event.y - figure[len(figure) - 1][Y_DOT])
+
+    if (dif_x > dif_y):
+        add_dot_figure(event.x, figure[len(figure) - 1][Y_DOT])
+    else:
+        add_dot_figure(figure[len(figure) - 1][X_DOT], event.y)
 
 
 
@@ -561,6 +589,9 @@ if __name__ == "__main__":
 
     canvas_win.bind("<1>", add_dot_cutter_click)
     canvas_win.bind("<3>", add_dot_figure_click)
+
+    canvas_win.bind('<space>', add_paral_line_cutter)
+    canvas_win.bind('<Control_L>', add_paral_line_figure)
 
     # Add cutter
 
