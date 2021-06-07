@@ -256,7 +256,7 @@ def check_visible(dot1_bits, dot2_bits):
 
     vision = 0 # частично видимый
 
-    if (dot1_bits or dot2_bits):
+    if (dot1_bits == 0 and dot2_bits == 0):
         vision = 1 # видим
     elif (dot1_bits & dot2_bits):
         vision = -1 # не видим
