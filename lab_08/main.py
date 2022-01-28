@@ -323,7 +323,7 @@ def extra_check(): # чтобы не было пересечений
     return False
 
 
-def check_polygon(): # через проход по всем точкам, поворот которых должен быть все время в одну сторону
+def check_polygon(): 
     if (len(cutter) < 3):
         return False
 
